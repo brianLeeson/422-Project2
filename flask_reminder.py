@@ -29,10 +29,14 @@ app = flask.Flask(__name__)
 @app.route("/schedule")
 def index():
 	app.logger.debug("Main page entry")
-	if 'schedule' not in flask.session:
-		app.logger.debug("Processing raw schedule file")
-		raw = open(CONFIG.schedule)
-		flask.session['schedule'] = pre.process(raw)
-		raw.close()
 
-	return flask.render_template('syllabus.html')
+	return flask.render_template('index.html')
+
+# TODO: setup config script?
+# app.secret_key = CONFIG.secret_key
+# app.debug=CONFIG.DEBUG
+app.logger.setLevel(logging.DEBUG)
+if __name__ == "__main__":
+	port = 8000  # TODO: arbitrary port num. could do better
+	print("Opening for global access on port {}".format(port))
+	app.run(port=port, host="0.0.0.0")
