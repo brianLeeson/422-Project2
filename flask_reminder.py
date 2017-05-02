@@ -1,7 +1,13 @@
 """
 Author(s): Brian Leeson
 
-this is where the flask server will be implemented.
+This is where the flask server will be implemented.
+
+To run this test server:
+"make run"
+open browser
+"localhost:8000" into url
+be amazed
 """
 
 
@@ -23,6 +29,7 @@ from dateutil import tz  # For interpreting local times
 # Globals
 ###
 app = flask.Flask(__name__)
+
 
 @app.route("/")
 @app.route("/index")
