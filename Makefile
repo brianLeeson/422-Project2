@@ -26,6 +26,9 @@ freeze:
 run: env
 	. env/bin/activate; python3 flask_reminder.py
 
+run_bk: env
+	. env/bin/activate; python3 flask_reminder.py &
+
 clean:
 	rm -rf __pycache__
 
