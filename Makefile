@@ -26,6 +26,8 @@ freeze:
 run: env
 	. env/bin/activate; python3 flask_reminder.py
 
+# run server in background
+# be comfortable will killing processes to kill the server.
 run_bk: env
 	. env/bin/activate; python3 flask_reminder.py &
 
