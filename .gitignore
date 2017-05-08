@@ -1,2 +1,7 @@
 env/
 .idea/
+CONFIG.py
+__pycache__/
+secrets/
+Makefile.local
+
