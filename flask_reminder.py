@@ -33,7 +33,6 @@ app = flask.Flask(__name__)
 
 @app.route("/")
 @app.route("/index")
-@app.route("/schedule")
 def index():
 	app.logger.debug("Main page entry")
 
