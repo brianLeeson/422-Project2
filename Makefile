@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 SHELL := /bin/bash
 # Author(s): Brian
-# Credit: Based of a 322 project whose code base the instructor wrote
-
 #  422 Project 2
 
 VENV = python3 -m venv
@@ -16,22 +14,6 @@ Makefile.local:
 	bash ./configure
 include Makefile.local
 
-
-#  Compile web-site assets (things that will be in the 'static' 
-#  directory)
-#
-#  Largely this means concatenating and 'minifying' some javascript and css 
-#  assets to reduce browser load time (fewer http requests). 
-#
-
-# A locally installed copy of browserify
-BROWSERIFY=static/js/node_modules/browserify/bin/cmd.js
-
-#
-#  The files we generate at build-time
-# 
-DERIVED = static/js/*.min.js static/js/node_modules
-
 #  Virtual environment
 
 env:
@@ -42,18 +24,16 @@ env:
 # so run them as $(INVENV) command
 INVENV = source ./env/bin/activate ;
 
-#  Note on javascript source files: 
-#  Although nodejs is installed in Raspbian, 
-#  npm is not.  (Just like pyvenv not being installed 
-#  with Python3 ... what were they thinking?) 
-#  We'll get by without npm and browserify. 
-# 
-
 # 'make run' runs Flask's built-in test server, 
 #  with debugging turned on unless it is unset in CONFIG.py
 # 
 run:	env
 	($(INVENV) python3 flask_main.py) ||  true
+
+# run server in background
+# be comfortable will killing processes to kill the server.
+background: env
+	($(INVENV) python3 flask_reminder.py) &
 
 # 'make service' runs as a background job under the gunicorn 
 #  WSGI server. FIXME:  A real production service would use 

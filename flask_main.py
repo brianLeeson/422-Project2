@@ -357,31 +357,45 @@ def list_calendars(service):
     The returned list is sorted to have
     the primary calendar first, and selected (that is, displayed in
     Google Calendars web app) calendars before unselected calendars.
+    
+    pseudo code:
+    get cals
+    key into reminder cal
+    ask for all events for today.
+    parse those events.
+    package to send to amie
+    then what??
+    
     """
     # TODO: this is where the cal is requested.
     # TODO: get all events from reminder cal for today.
 
     app.logger.debug("Entering list_calendars")
     # get all calendars on gmail account.
-    calendar_list = service.calendarList().list().execute()["items"]
+    calendar_list = service.calendarList().list().execute()["items"]  # TODO: understand this api request
     f = open('server_log', 'a')
-    print("CAL LIST:")
-    for thing in calendar_list:
-        f.write(thing.__str__())
+    f.write("CAL LIST:\n")
 
     result = []
     for cal in calendar_list:
+        # write all calendar to log. we will use the cal id to get info
+        f.write("\nCAL IS:\n")
+        f.write(cal.__str__() + "\n")
+
         # events is all events in the date range. does not consider time
         timeMin = flask.session["begin_date"]
         timeMax = flask.session["end_date"]  # google excludes this day in the range
         timeMax = arrow.get(timeMax).replace(days=+ 1).isoformat()  # so we add a day
+
+        # following line is IMPORTANT TODO: understand it. this is the call to the api
         events = service.events().list(calendarId=cal['id'], timeMin=timeMin,
                                        timeMax=timeMax, singleEvents=True).execute()['items']
-        """
-        print("events is:")
+
+        # write all of the calendars events to logs
+        f.write("EVENTS ARE: \n")
         for event in events:
-            print("event:", event)
-        """
+            f.write("EVENT: \n")
+            f.write(event.__str__() + "\n")
 
         # process events to exclude irrelevent times
         events = relevantEvents(events,
@@ -408,6 +422,7 @@ def list_calendars(service):
              "description": desc,
              "events": events
              })
+    f.close()
     return sorted(result, key=cal_sort_key)
 
 
