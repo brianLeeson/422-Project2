@@ -1,101 +1,70 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html lang="en">
-<head>
-    <title>Appointments</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <head>
+        <title>Med Reminder</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/latest/css/bootstrap.css"/>
-    <link rel="stylesheet" type="text/css" href="/static/css/busy.css"/>
+        <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/latest/css/bootstrap.css"/>
+        <link rel="stylesheet" type="text/css" href="/static/css/busy.css"/>
 
-    <!-- jquery from a content distribution network; probably cached -->
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-    <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+        <!-- jquery from a content distribution network; probably cached -->
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+        <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+        <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
 
-</head>
+    </head>
+    
+    <body>
+        <div class="container">
 
-<body>
-    <div class="container">
+            <h1>Data Checking</h1>
+            <p>This webpage will write the contents of you calender in the date range to a log file for us to read.</p>
+            <p>No need to change the range, unless you'd like to. Please click the Button once. Then you're done!</p>
+            <p>The date selection to is only for getting data in this early stage. Med reminders are planned to only go out the day they are due.</p>
 
-    <h1>Data Checking</h1>
-    <p>This webpage will write the contents of you calender in the date range to a log file for us to read.</p>
-    <p>No need to change the range, unless you'd like to. Please click the Button once. Then you're done!</p>
+            <h3>Date range</h3>
+            <form action="/setrange" method="post">
+                <!--the stuff in {% stuff %} below is jinja code. weird right.-->
+                <input type="text" name="daterange" size="12"
+                {% if session.daterange is defined %}
+                       value="{{session.daterange}}"
+                {% endif %}
+                       class="pull-down"
+                       style="background: #fff; cursor: pointer; padding: 5px 10px;
+                       border: 1px solid #ccc; width: 12em" >
+                <script type="text/javascript">
+                    $(function() {
+                        $('input[name="daterange"]').daterangepicker({
+                            ranges: {
+                                'Today': [moment(), moment()],
+                                'Tomorrow':[moment().add(1, 'days'),
+                                    moment().add(1, 'days')],
+                                'This week':[moment(), moment().endOf('week')],
+                                'Next week':[moment().add(7, 'days').startOf('week'),
+                                    moment().add(7, 'days').endOf('week')],
+                                'This month':[moment(), moment().endOf('month')],
+                                'Within two weeks':[moment(),moment().add(15, 'days')]
+                             }
+                        });
+                    });
+                </script>
+                <br/>
 
+                <h3>Time Range</h3>
+                <input type="time" name="startTime" value="00:00:00">
+                to
+                <input type="time" name="endTime" value="23:59:00">
 
-    <h2>Date range</h2>
-        <form action="/setrange" method="post">
-        <input type="text" name="daterange" size="12"
-        {% if session.daterange is defined %}
-               value="{{session.daterange}}"
-        {% endif %}
-               class="pull-down"
-               style="background: #fff; cursor: pointer; padding: 5px 10px;
-         border: 1px solid #ccc; width: 12em" >
-        <script type="text/javascript">
-        $(function() {
-        $('input[name="daterange"]').daterangepicker(
-           {    ranges: {
-               'Today': [moment(), moment()],
-               'Tomorrow':[moment().add(1, 'days'),
-                           moment().add(1, 'days')],
-               'This week':[moment(), moment().endOf('week')],
-               'Next week':[moment().add(7, 'days').startOf('week'),
-                            moment().add(7, 'days').endOf('week')],
-               'This month':[moment(), moment().endOf('month')],
-               'Within two weeks':[moment(),moment().add(15, 'days')]
-            }}
-           );
-        });
+                <br>
+                <input type="submit" value="Generate Log" />
+            </form>
 
-     </script>
-    <br/>
-
-    <h2>Time Range</h2>
-    <input type="time" name="startTime" value="00:00:00">
-    to
-    <input type="time" name="endTime" value="23:59:00">
-
-    <br>
-    <input type="submit" value="Choose Calendar" />
-    </form>
-
-    <div id="target"></div>
-      <script>
-      $("#show_times").click(function(event){
-        //console.log("you clicked Show Times")
-        var checkBoxes = $(".checkbox");
-        //console.log("list of checked boxes: " + checkBoxes)
-        var checkedList = "";
-        for(var i = 0; i< checkBoxes.length; i++){
-          if(checkBoxes[i].checked){
-              checkedList= checkedList + checkBoxes[i].value + " ";
-            }
-        }
-        //console.log("Through loop. Doing AJAX")
-        $.getJSON("/get_times", { checkedList: checkedList }, function(e) {
-          //clear div before appending
-          $("#target").html("")
-          e.result.key.forEach(function(day){
-            $("#target").append("<b>Schedule for the day " + day[0].start.substring(5,10) +"</b><br>" );
-            day.forEach(function(block){
-              var fbString = ("<b>Block is: </b>"+block.summary+"<b> Start: </b>"+ block.start.substring(11, 16)+"<b> End: </b>"+block.end.substring(11,16)+"<br>");
-              $("#target").append(fbString);
-            });
-          $("#target").append("<br>")
-          });
-        });
-      });
-
-        $(".header").click(function(event){
-        var str = ".row_" + this.id
-        $(str).toggle();
-      });
-      </script>
-
-
-    </div>  <!-- container (for bootstrap) -->
-</body>
+            <script>
+            <!--inline js here if you like-->
+            </script>
+        </div>  <!-- container (for bootstrap) -->
+    </body>
 </html>
 

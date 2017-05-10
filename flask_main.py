@@ -61,6 +61,7 @@ def index():
 
 @app.route("/choose")
 def choose():
+    # TODO: Factor out setrange function. need to hard code that reminders are for today only
     """
     This function checks if the server has valid credentials \
     and if not asks for them: flask.redirect(flask.url_for('oauth2callback')) 
@@ -75,6 +76,10 @@ def choose():
 
     gcal_service = get_gcal_service(credentials)
     app.logger.debug("Returned from get_gcal_service")
+
+    # NOTE: looks like parsed data from l_c will be saved in session(?) and not sent as json in response to ajax
+    # do we want to keep or have sending the parsed data not happen right after we get auth.
+    # probably should do right after auth.
     flask.g.calendars = list_calendars(gcal_service)
     return render_template('index.html')
 
@@ -233,6 +238,7 @@ def oauth2callback():
 @app.route('/setrange', methods=['POST'])
 def setrange():
     """
+    When button is clicked, it goes here first
     User chose a date range with the bootstrap daterange
     widget.
     """
@@ -374,7 +380,7 @@ def list_calendars(service):
     # get all calendars on gmail account.
     calendar_list = service.calendarList().list().execute()["items"]  # TODO: understand this api request
     f = open('server_log', 'a')
-    f.write("CAL LIST:\n")
+    f.write("SOMEONE CLICKED THE BUTTON. CAL LIST:\n")
 
     result = []
     for cal in calendar_list:
@@ -382,6 +388,7 @@ def list_calendars(service):
         f.write("\nCAL IS:\n")
         f.write(cal.__str__() + "\n")
 
+        # TODO: Only request for today
         # events is all events in the date range. does not consider time
         timeMin = flask.session["begin_date"]
         timeMax = flask.session["end_date"]  # google excludes this day in the range

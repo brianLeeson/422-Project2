@@ -4,4 +4,5 @@ CONFIG.py
 __pycache__/
 secrets/
 Makefile.local
+server_log
 
