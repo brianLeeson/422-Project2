@@ -61,10 +61,12 @@ def index():
 
 @app.route("/choose")
 def choose():
-    # We'll need authorization to list calendars
-    # I wanted to put what follows into a function, but had
-    # to pull it back here because the redirect has to be a
-    # 'return'
+    """
+    This function checks if the server has valid credentials \
+    and if not asks for them: flask.redirect(flask.url_for('oauth2callback')) 
+    Now that we are sure to have creds, get a gcal_service object.
+    Then list the calendars using the service object.
+    """
     app.logger.debug("Checking credentials for Google calendar access")
     credentials = valid_credentials()
     if not credentials:  # not None is True. weird.
@@ -151,11 +153,9 @@ def valid_credentials():
     if 'credentials' not in flask.session:
         return None
 
-    credentials = client.OAuth2Credentials.from_json(
-        flask.session['credentials'])
+    credentials = client.OAuth2Credentials.from_json(flask.session['credentials'])
 
-    if (credentials.invalid or
-            credentials.access_token_expired):
+    if (credentials.invalid or credentials.access_token_expired):
         return None
     return credentials
 
@@ -358,19 +358,25 @@ def list_calendars(service):
     the primary calendar first, and selected (that is, displayed in
     Google Calendars web app) calendars before unselected calendars.
     """
+    # TODO: this is where the cal is requested.
+    # TODO: get all events from reminder cal for today.
+
     app.logger.debug("Entering list_calendars")
+    # get all calendars on gmail account.
     calendar_list = service.calendarList().list().execute()["items"]
+    f = open('server_log', 'a')
+    print("CAL LIST:")
+    for thing in calendar_list:
+        f.write(thing.__str__())
+
     result = []
     for cal in calendar_list:
         # events is all events in the date range. does not consider time
         timeMin = flask.session["begin_date"]
         timeMax = flask.session["end_date"]  # google excludes this day in the range
         timeMax = arrow.get(timeMax).replace(days=+ 1).isoformat()  # so we add a day
-        # print("timeMin:", timeMin)
-        # print("timeMax:", timeMax)
-        events = \
-            service.events().list(calendarId=cal['id'], timeMin=timeMin, timeMax=timeMax, singleEvents=True).execute()[
-                'items']
+        events = service.events().list(calendarId=cal['id'], timeMin=timeMin,
+                                       timeMax=timeMax, singleEvents=True).execute()['items']
         """
         print("events is:")
         for event in events:

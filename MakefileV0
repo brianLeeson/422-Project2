@@ -1,3 +1,5 @@
+# This file to be deprecated
+
 #!/usr/bin/env bash
 SHELL := /bin/bash
 # Author(s): Brian
