@@ -28,7 +28,7 @@ INVENV = source ./env/bin/activate ;
 #  with debugging turned on unless it is unset in CONFIG.py
 # 
 run:	env
-	($(INVENV) python3 flask_main.py) ||  true
+	($(INVENV) python3 flask_reminder.py) ||  true
 
 # run server in background
 # be comfortable will killing processes to kill the server.
