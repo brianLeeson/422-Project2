@@ -62,8 +62,8 @@ service:	env
 ## Preserve virtual environment for git repository
 ## to duplicate it on other targets
 ##
-freeze:	env
-	$(INVENV) pip freeze >requirements.txt
+freeze:
+	(pip freeze | grep -v "pkg-resources" > requirements.txt) || true
 
 
 # 'clean' and 'veryclean' are typically used before checking 
