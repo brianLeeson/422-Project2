@@ -18,11 +18,11 @@ include Makefile.local
 
 env:
 	$(VENV)  env
-	($(INVENV) ./env/bin/activate; pip install --upgrade pip; pip install -r requirements.txt) || true
+	($(INVENV) pip install --upgrade pip; pip install -r requirements.txt) || true
 
 # Many recipes need to be run in the virtual environment, 
 # so run them as $(INVENV) command
-INVENV = source ./env/bin/activate ;
+INVENV = source ./env/bin/activate;
 
 # 'make run' runs Flask's built-in test server, 
 #  with debugging turned on unless it is unset in CONFIG.py

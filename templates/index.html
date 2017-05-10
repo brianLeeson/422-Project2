@@ -31,7 +31,7 @@
 
             <h3>Date range</h3>
             <form action="/setrange" method="post">
-                <!--the stuff in {% stuff %} below is jinja code. weird right.-->
+                <!--the stuff in the brace percent below is jinja code. weird right.-->
                 <input type="text" name="daterange" size="12"
                 {% if session.daterange is defined %}
                        value="{{session.daterange}}"

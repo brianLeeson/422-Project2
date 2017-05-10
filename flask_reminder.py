@@ -380,7 +380,7 @@ def list_calendars(service):
     # get all calendars on gmail account.
     calendar_list = service.calendarList().list().execute()["items"]  # TODO: understand this api request
     f = open('server_log', 'a')
-    f.write("SOMEONE CLICKED THE BUTTON. CAL LIST:\n")
+    f.write("\n ------- SOMEONE CLICKED THE BUTTON. CAL LIST:\n")
 
     result = []
     for cal in calendar_list:
@@ -399,9 +399,9 @@ def list_calendars(service):
                                        timeMax=timeMax, singleEvents=True).execute()['items']
 
         # write all of the calendars events to logs
-        f.write("EVENTS ARE: \n")
+        f.write("-----EVENTS ARE: \n")
         for event in events:
-            f.write("EVENT: \n")
+            f.write("---EVENT: \n")
             f.write(event.__str__() + "\n")
 
         # process events to exclude irrelevent times
