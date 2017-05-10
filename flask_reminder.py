@@ -25,9 +25,11 @@ from apiclient import discovery
 ###
 # Globals
 ###
+import sys
+sys.path.insert(0,"./secrets/")
 import CONFIG
-import secrets.admin_secrets  # Per-machine secrets
-import secrets.client_secrets  # Per-application secrets
+import admin_secrets  # Per-machine secrets
+import client_secrets  # Per-application secrets
 
 #  Note to CIS 322 students:  client_secrets is what you turn in.
 #     You need an admin_secrets, but the grader and I don't use yours. 
@@ -40,7 +42,7 @@ app.logger.setLevel(logging.DEBUG)
 app.secret_key = CONFIG.secret_key
 
 SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
-CLIENT_SECRET_FILE = secrets.admin_secrets.google_key_file
+CLIENT_SECRET_FILE = admin_secrets.google_key_file
 APPLICATION_NAME = 'MeetMe class project'
 
 
