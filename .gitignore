@@ -7,3 +7,5 @@ Makefile.local
 server_log
 .DS_Store
 ._.DS_Store
+._server_log
+
