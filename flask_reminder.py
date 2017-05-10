@@ -81,7 +81,7 @@ def choose():
     # do we want to keep or have sending the parsed data not happen right after we get auth.
     # probably should do right after auth.
     flask.g.calendars = list_calendars(gcal_service)
-    return render_template('index.html')
+    return render_template('success.html')
 
 
 @app.route("/get_times")
@@ -399,9 +399,9 @@ def list_calendars(service):
                                        timeMax=timeMax, singleEvents=True).execute()['items']
 
         # write all of the calendars events to logs
-        f.write("-----EVENTS ARE: \n")
+        f.write("\n-----EVENTS ARE: \n")
         for event in events:
-            f.write("---EVENT: \n")
+            f.write("\n---EVENT: \n")
             f.write(event.__str__() + "\n")
 
         # process events to exclude irrelevent times
