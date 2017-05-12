@@ -4,7 +4,7 @@ CONFIG.py
 __pycache__/
 secrets/
 Makefile.local
-server_log
+server_log.txt
 .DS_Store
 ._.DS_Store
 ._server_log

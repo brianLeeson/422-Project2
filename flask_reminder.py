@@ -381,7 +381,7 @@ def list_calendars(service):
     app.logger.debug("Entering list_calendars")
     # get all calendars on gmail account.
     calendar_list = service.calendarList().list().execute()["items"]  # TODO: understand this api request
-    f = open('server_log', 'a')
+    f = open('server_log.txt', 'a')
     f.write("\n ------- SOMEONE CLICKED THE BUTTON. CAL LIST:\n")
 
     result = []
@@ -483,4 +483,5 @@ if __name__ == "__main__":
     # App is created above so that it will
     # exist whether this is 'main' or not
     # (e.g., if we are running under green unicorn)
+    print("Opening for global access on port {}".format(CONFIG.PORT))
     app.run(port=CONFIG.PORT, host="0.0.0.0")
