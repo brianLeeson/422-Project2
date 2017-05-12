@@ -62,9 +62,6 @@ service:	env
 #	$(INVENV) nosetests
 
 
-
-
-
 # 'clean' should leave the project ready to run
 # 'veryclean' will leave project in a state that requires re-running installation and configuration steps
 # making the repo very clean before testing and debugging is advised.
