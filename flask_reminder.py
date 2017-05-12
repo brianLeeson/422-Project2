@@ -431,6 +431,7 @@ def list_calendars(service):
              "description": desc,
              "events": events
              })
+
     f.close()
     return sorted(result, key=cal_sort_key)
 
