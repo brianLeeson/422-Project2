@@ -1,5 +1,6 @@
 import arrow
 
+
 def relevantEvents(eventList, rangeStart, rangeEnd):
   """
   arg: a dictionary of events, 
@@ -26,7 +27,7 @@ def relevantEvents(eventList, rangeStart, rangeEnd):
     if arrow.get(event["end"]["dateTime"]).timetz() < arrow.get(rangeStart).timetz():
       continue
     if arrow.get(event["start"]["dateTime"]).timetz() > arrow.get(rangeEnd).timetz():
-      continue 
+      continue
     else:
       inRangeEvents.append(event)
       #print("event start is:", event["start"])
@@ -44,12 +45,12 @@ def groupByDay(busyEvents):
   Example:
     [[{e1},{e2},{e3}], [{},{},{}], ..., [...]]  
   """
-  #print("busyEvents is:", busyEvents)  
+  #print("busyEvents is:", busyEvents)
 
 
   #sort all events by start time
-  busySorted = sorted(busyEvents, key=lambda event: event[0]) 
-  
+  busySorted = sorted(busyEvents, key=lambda event: event[0])
+
   """
   print("should be sorted")
   for event in busySorted:
@@ -66,17 +67,17 @@ def groupByDay(busyEvents):
       dayGroup.append(event)
       busyGrouped.append(dayGroup)
       break
-      
+
     #stip down event
     event  = {"start": busySorted[i][0], "end": busySorted[i][1]}
     #add it to the day
     dayGroup.append(event)
-    
+
     #if it's day is different from the next day, append dGroup, dGroup =[]
     if (arrow.get(busySorted[i][0]).day != arrow.get(busySorted[i+1][0]).day):
       busyGrouped.append(dayGroup)
       dayGroup = []
-  
+
   """
   print("busyGrouped is:", busyGrouped)
   for day in busyGrouped:
@@ -93,9 +94,9 @@ def mergeBusy(groupedEvents):
   events = dict
   args: a list of lists of events
   ret: a list of lists of events, that have over lapping events merged
-    Events will contain only {"start": startTime, "end": endTime, AND "summary" : "busy"}
+  Events will contain only {"start": startTime, "end": endTime, AND "summary" : "busy"}
   """
-  #print("groupedEvents is:", groupedEvents)  
+  #print("groupedEvents is:", groupedEvents)
   mergedBlocks = []  #going to be a list of lists of dicts/busy blocks
   for day in groupedEvents:
     mergedDays = []
@@ -105,15 +106,15 @@ def mergeBusy(groupedEvents):
       #start/end of ith event
       startTime = day[i]["start"]
       endTime = day[i]["end"]
-    
+
       if (day[i+1] == "$"):  #if at end, break
         block = {"start": startTime, "end": endTime, "summary": "Busy"}
         mergedDays.append(block)
         break
-      
+
       startTimeNext = day[i+1]["start"]
       endTimeNext = day[i+1]["end"]
-      
+
       #OVERLAPPING
       #if end of i > start i+1, event is overlapping group the events, place at i+1
       if (endTime >  startTimeNext):
@@ -126,10 +127,10 @@ def mergeBusy(groupedEvents):
         mergedDays.append(block)
 
     mergedBlocks.append(mergedDays) #append the days blocks
-    
+
   #print("mergedBlocks is:", mergedBlocks)
   return mergedBlocks
- 
+
 def addFree(busyBlocks, startTime, endTime, startDate, endDate):
   """
   args: busyBlocks: list of list of dicts. List of days of blocks. Each block has a start, end, and summary field
@@ -147,29 +148,29 @@ def addFree(busyBlocks, startTime, endTime, startDate, endDate):
   startDate = arrow.get(startDate)
   endDate = arrow.get(endDate).replace(days=+1) #include final day
   diff = endDate.day - startDate.day
- 
-  ithStart = startDate.replace(hour=arrow.get(startTime).hour, minute=arrow.get(startTime).minute)  
-  ithEnd = startDate.replace(hour=arrow.get(endTime).hour, minute=arrow.get(endTime).minute) 
+
+  ithStart = startDate.replace(hour=arrow.get(startTime).hour, minute=arrow.get(startTime).minute)
+  ithEnd = startDate.replace(hour=arrow.get(endTime).hour, minute=arrow.get(endTime).minute)
 
   dayIndex = 0
   bbIndex = 0
   freeBusyList = []
-  
+
   if(len(busyBlocks)):
     bbDay = arrow.get(busyBlocks[bbIndex][0]["start"])
-  
+
   while(dayIndex<diff):
-    dayBlocks = [] 
+    dayBlocks = []
     #Case: day has no events
     #if currDay != ith day: make free block of day
     if ((len(busyBlocks) == 0) or (bbDay.date() != ithStart.date())): #found clear day
       block = {"start": ithStart.isoformat(), "end": ithEnd.isoformat(), "summary": "Free"}
       dayBlocks.append(block)
-    
+
     #Else: has has events
     else:
       day = busyBlocks[bbIndex]
-   
+
       #Case: start of day
       if (day[0]["start"] > ithStart.isoformat()):
         block = {"start": ithStart.isoformat(), "end": day[0]["start"], "summary": "Free"}
@@ -185,7 +186,7 @@ def addFree(busyBlocks, startTime, endTime, startDate, endDate):
       if (day[0]["end"] < ithEnd.isoformat()):
         block = {"start": day[0]["end"], "end": ithEnd.isoformat(), "summary": "Free"}
         dayBlocks.append(block)
-      
+
       dayBlocks.extend(day)
       #if we've processed a day, increment the day counter
       if (bbIndex < len(busyBlocks)-1):
@@ -197,7 +198,7 @@ def addFree(busyBlocks, startTime, endTime, startDate, endDate):
     ithEnd = ithEnd.replace(days=+1)
     dayIndex+=1
     freeBusyList.append(dayBlocks)
- 
+
   freeBusySorted = []
   #sort by start time
   for day in freeBusyList:
