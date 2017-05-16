@@ -73,7 +73,17 @@ def generate():
     # NOTE: below is a way for you to save data in the session(?) variable.
     # flask.g.calendars = list_calendars(gcal_service)
 
-    reminderList = generateReminders(gcal_service)
+    reminderDict = generateReminders(gcal_service)
+    """
+    reminderDict should look like
+    reminderDict = {
+        Foster Name : "John Smith",
+        Foster Email : "jsmith@email.com",
+        Animal Name(s) : "Fluffy Bunny",
+        Medication(s) : "Love, Hugs",
+        Notes : "Please give a large dose twice a day until condition improves. Oh, and don't forget to email us back!"
+    }
+    """
 
     return render_template('success.html')
 
@@ -232,8 +242,6 @@ def generateReminders(service):
         eventNum = 0
         for event in events:
             if "description" in event:
-                print("FOUND DES")
-                print(event['description'])
                 # process event
                 value = process.create_reminders(event)
                 key = eventNum
