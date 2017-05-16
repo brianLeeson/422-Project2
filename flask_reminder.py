@@ -61,9 +61,8 @@ def index():
     return render_template('index.html')
 
 
-@app.route("/choose")
-def choose():
-    # TODO: Factor out setrange function. need to hard code that reminders are for today only
+@app.route('/generate')
+def generate():
     """
     This function checks if the server has valid credentials \
     and if not asks for them: flask.redirect(flask.url_for('oauth2callback')) 
@@ -82,7 +81,12 @@ def choose():
     # NOTE: looks like parsed data from l_c will be saved in session(?) and not sent as json in response to ajax
     # do we want to keep or have sending the parsed data not happen right after we get auth.
     # probably should do right after auth.
-    flask.g.calendars = list_calendars(gcal_service)
+
+    # TODO: remember that below is a way for you to save data in the session(?) variable.
+    # flask.g.calendars = list_calendars(gcal_service)
+
+    list_calendars(gcal_service)
+
     return render_template('success.html')
 
 
@@ -223,7 +227,7 @@ def oauth2callback():
         # but for the moment I'll just log it and go back to
         # the main screen
         app.logger.debug("Got credentials")
-        return flask.redirect(flask.url_for('choose'))
+        return flask.redirect(flask.url_for('generate'))
 
 
 #####
@@ -237,7 +241,8 @@ def oauth2callback():
 #
 #####
 
-@app.route('/setrange', methods=['POST'])
+# @app.route('/setrange', methods=['POST'])
+'''
 def setrange():
     """
     When button is clicked, it goes here first
@@ -270,7 +275,7 @@ def setrange():
         flask.session['begin_date'], flask.session['end_date'],
         flask.session['begin_time'], flask.session['end_time']))
     return flask.redirect(flask.url_for("choose"))
-
+'''
 
 ####
 #
@@ -384,19 +389,21 @@ def list_calendars(service):
     f = open('server_log.txt', 'a')
     f.write("\n ------- SOMEONE CLICKED THE BUTTON. CAL LIST:\n")
 
+    today = arrow.now('local')
+    today = today.fromdate(today, tzinfo='local')
+
+    print("TODAY IS:", today)
+    tomorrow = today.replace(days=+1)  # TODO 'oneWeek' replace after GH log
+    oneWeek = today.replace(days=+7)
+    timeMin = today.isoformat()
+    timeMax = oneWeek.isoformat()
+
     result = []
     for cal in calendar_list:
         # write all calendar to log. we will use the cal id to get info
         f.write("\nCAL IS:\n")
         f.write(cal.__str__() + "\n")
 
-        # TODO: Only request for today
-        # events is all events in the date range. does not consider time
-        timeMin = flask.session["begin_date"]
-        timeMax = flask.session["end_date"]  # google excludes this day in the range
-        timeMax = arrow.get(timeMax).replace(days=+ 1).isoformat()  # so we add a day
-
-        # following line is IMPORTANT TODO: understand it. this is the call to the api
         events = service.events().list(calendarId=cal['id'], timeMin=timeMin,
                                        timeMax=timeMax, singleEvents=True).execute()['items']
 
@@ -405,32 +412,6 @@ def list_calendars(service):
         for event in events:
             f.write("\n---EVENT: \n")
             f.write(event.__str__() + "\n")
-
-        # process events to exclude irrelevent times
-        events = relevantEvents(events,
-                                flask.session['begin_time'],
-                                flask.session['end_time'])
-
-        kind = cal["kind"]
-        id = cal["id"]
-        if "description" in cal:
-            desc = cal["description"]
-        else:
-            desc = "(no description)"
-        summary = cal["summary"]
-        # Optional binary attributes with False as default
-        selected = ("selected" in cal) and cal["selected"]
-        primary = ("primary" in cal) and cal["primary"]
-
-        result.append(
-            {"kind": kind,
-             "id": id,
-             "summary": summary,
-             "selected": selected,
-             "primary": primary,
-             "description": desc,
-             "events": events
-             })
 
     f.close()
     return sorted(result, key=cal_sort_key)
