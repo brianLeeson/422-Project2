@@ -8,12 +8,8 @@ import uuid
 import json
 import logging
 
-from process_events import *
-
 # Date handling 
 import arrow  # Replacement for datetime, based on moment.js
-# import datetime # But we still need time
-from dateutil import tz  # For interpreting local times
 
 # OAuth2  - Google library implementation for convenience
 from oauth2client import client
@@ -22,20 +18,13 @@ import httplib2  # used in oauth2 flow
 # Google API for services 
 from apiclient import discovery
 
-###
-# Globals
-###
 import sys
-sys.path.insert(0,"./secrets/")
+sys.path.insert(0, "./secrets/")
 import CONFIG
 import admin_secrets  # Per-machine secrets
-import client_secrets  # Per-application secrets
 
-#  Note to CIS 322 students:  client_secrets is what you turn in.
-#     You need an admin_secrets, but the grader and I don't use yours. 
-#     We use our own admin_secrets file, along with your client_secrets
-#     file on our Raspberry Pis. 
 
+# Globals
 app = flask.Flask(__name__)
 app.debug = CONFIG.DEBUG
 app.logger.setLevel(logging.DEBUG)
@@ -45,19 +34,16 @@ SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
 CLIENT_SECRET_FILE = admin_secrets.google_key_file
 APPLICATION_NAME = 'MeetMe class project'
 
-
-#############################
-#
-#  Pages (routed from URLs)
-#
-#############################
+# Pages (routed from URLs)
 
 @app.route("/")
 @app.route("/index")
 def index():
+    """
+    Renders homepage. 
+    I don't believe we need to initialize any state on the server
+    """
     app.logger.debug("Entering index")
-    if 'begin_date' not in flask.session:
-        init_session_values()
     return render_template('index.html')
 
 
@@ -82,48 +68,12 @@ def generate():
     # do we want to keep or have sending the parsed data not happen right after we get auth.
     # probably should do right after auth.
 
-    # TODO: remember that below is a way for you to save data in the session(?) variable.
+    # NOTE: below is a way for you to save data in the session(?) variable.
     # flask.g.calendars = list_calendars(gcal_service)
 
     list_calendars(gcal_service)
 
     return render_template('success.html')
-
-
-@app.route("/get_times")
-def get_times():
-    """
-    Called when calendars selected
-    Writes busy and free times into flask.#FIXME based of cals selected
-    """
-    # get service object
-    credentials = valid_credentials()
-    service = get_gcal_service(credentials)
-    app.logger.debug("Got service for getting events")
-
-    # Get selected cals
-    checkedCal = request.args.get("checkedList", type=str).split()
-    splitCal = []
-    for entry in checkedCal:
-        splitCal.append(entry.split(","))
-
-    # print("splitCal is:", splitCal)
-    # splitCal is a list of lists, where each inner list [0]= iso start, [1]= iso end
-
-    # group by day. sorted in each day
-    groupedEvents = groupByDay(splitCal)
-    # ?Send to be selected?
-
-    # merge busy events into busy blocks
-    busyBlocks = mergeBusy(groupedEvents)
-
-    # add free times
-    timeBlocks = addFree(busyBlocks, flask.session["begin_time"], flask.session["end_time"],
-                         flask.session["begin_date"], flask.session["end_date"])
-
-    # send list of lists of dicts containing free/busy blocks to the client to display
-    return jsonify(result={"key": timeBlocks})
-
 
 ####
 #
@@ -154,6 +104,7 @@ def get_times():
 #
 ####
 
+
 def valid_credentials():
     """
     Returns OAuth2 credentials if we have valid
@@ -173,14 +124,14 @@ def valid_credentials():
 
 def get_gcal_service(credentials):
     """
-  We need a Google calendar 'service' object to obtain
-  list of calendars, busy times, etc.  This requires
-  authorization. If authorization is already in effect,
-  we'll just return with the authorization. Otherwise,
-  control flow will be interrupted by authorization, and we'll
-  end up redirected back to /choose *without a service object*.
-  Then the second call will succeed without additional authorization.
-  """
+    We need a Google calendar 'service' object to obtain
+    list of calendars, busy times, etc.  This requires
+    authorization. If authorization is already in effect,
+    we'll just return with the authorization. Otherwise,
+    control flow will be interrupted by authorization, and we'll
+    end up redirected back to /choose *without a service object*.
+    Then the second call will succeed without additional authorization.
+    """
     app.logger.debug("Entering get_gcal_service")
     http_auth = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=http_auth)
@@ -191,12 +142,12 @@ def get_gcal_service(credentials):
 @app.route('/oauth2callback')
 def oauth2callback():
     """
-  The 'flow' has this one place to call back to.  We'll enter here
-  more than once as steps in the flow are completed, and need to keep
-  track of how far we've gotten. The first time we do the first
-  step, the second time we'll skip the first step and do the second,
-  and so on.
-  """
+    The 'flow' has this one place to call back to.  We'll enter here
+    more than once as steps in the flow are completed, and need to keep
+    track of how far we've gotten. The first time we do the first
+    step, the second time we'll skip the first step and do the second,
+    and so on.
+    """
     app.logger.debug("Entering oauth2callback")
     flow = client.flow_from_clientsecrets(
         CLIENT_SECRET_FILE,
@@ -230,148 +181,15 @@ def oauth2callback():
         return flask.redirect(flask.url_for('generate'))
 
 
-#####
-#
-#  Option setting:  Buttons or forms that add some
-#     information into session state.  Don't do the
-#     computation here; use of the information might
-#     depend on what other information we have.
-#   Setting an option sends us back to the main display
-#      page, where we may put the new information to use. 
-#
-#####
-
-# @app.route('/setrange', methods=['POST'])
-'''
-def setrange():
-    """
-    When button is clicked, it goes here first
-    User chose a date range with the bootstrap daterange
-    widget.
-    """
-    app.logger.debug("Entering setrange")
-    flask.flash("Setrange gave us '{}'".format(
-        request.form.get('daterange')))
-
-    # Get date and time range
-    daterange = request.form.get('daterange')
-    startTime = request.form.get('startTime')[:5]  # strip seconds
-    endTime = request.form.get('endTime')[:5]  # strip seconds
-
-    flask.session['daterange'] = daterange
-    daterange_parts = daterange.split()
-    flask.session['begin_date'] = interpret_date(daterange_parts[0])
-    flask.session['end_date'] = interpret_date(daterange_parts[2])
-
-    interStart = interpret_time(startTime)
-    flask.session['begin_time'] = interStart
-    interEnd = interpret_time(endTime)
-    flask.session['end_time'] = interEnd
-
-    flask.session['timeRange'] = (interStart, interEnd)
-
-    app.logger.debug("Setrange parsed {} - {}  dates as {} - {}, times as {} - {}".format(
-        daterange_parts[0], daterange_parts[2],
-        flask.session['begin_date'], flask.session['end_date'],
-        flask.session['begin_time'], flask.session['end_time']))
-    return flask.redirect(flask.url_for("choose"))
-'''
-
-####
-#
-#   Initialize session variables 
-#
-####
-
-def init_session_values():
-    """
-    Start with some reasonable defaults for date and time ranges.
-    Note this must be run in app context ... can't call from main. 
-    """
-    app.logger.debug("init session values")
-    # Default date span = tomorrow to 1 week from now
-    now = arrow.now('local')  # We really should be using tz from browser
-    tomorrow = now.replace(days=+1)
-    nextweek = now.replace(days=+7)
-    flask.session["begin_date"] = tomorrow.floor('day').isoformat()
-    flask.session["end_date"] = nextweek.ceil('day').isoformat()
-    flask.session["daterange"] = "{} - {}".format(
-        tomorrow.format("MM/DD/YYYY"),
-        nextweek.format("MM/DD/YYYY"))
-    # Default time span each day, 8 to 5
-    flask.session["begin_time"] = interpret_time("9am")
-    flask.session["end_time"] = interpret_time("5pm")
-
-
-def interpret_time(text):
-    """
-    Read time in a human-compatible format and
-    interpret as ISO format with local timezone.
-    May throw exception if time can't be interpreted. In that
-    case it will also flash a message explaining accepted formats.
-    """
-    app.logger.debug("Decoding time '{}'".format(text))
-    time_formats = ["ha", "h:mma", "h:mm a", "H:mm"]
-    try:
-        as_arrow = arrow.get(text, time_formats).replace(tzinfo=tz.tzlocal())
-        as_arrow = as_arrow.replace(year=2016)  # HACK see below
-        app.logger.debug("Succeeded interpreting time")
-    except:
-        app.logger.debug("Failed to interpret time")
-        flask.flash("Time '{}' didn't match accepted formats 13:30 or 1:30pm"
-                    .format(text))
-        raise
-    return as_arrow.isoformat()
-
-
-# HACK #Workaround
-# isoformat() on raspberry Pi does not work for some dates
-# far from now.  It will fail with an overflow from time stamp out
-# of range while checking for daylight savings time.  Workaround is
-# to force the date-time combination into the year 2016, which seems to
-# get the timestamp into a reasonable range. This workaround should be
-# removed when Arrow or Dateutil.tz is fixed.
-# FIXME: Remove the workaround when arrow is fixed (but only after testing
-# on raspberry Pi --- failure is likely due to 32-bit integers on that platform)
-
-
-def interpret_date(text):
-    """
-    Convert text of date to ISO format used internally,
-    with the local time zone.
-    """
-    try:
-        as_arrow = arrow.get(text, "MM/DD/YYYY").replace(
-            tzinfo=tz.tzlocal())
-    except:
-        flask.flash("Date '{}' didn't fit expected format 12/31/2001")
-        raise
-    return as_arrow.isoformat()
-
-
-def next_day(isotext):
-    """
-    ISO date + 1 day (used in query to Google calendar)
-    """
-    as_arrow = arrow.get(isotext)
-    return as_arrow.replace(days=+1).isoformat()
-
-
-####
-#
 #  Functions (NOT pages) that return some information
-#
-####
+
 
 def list_calendars(service):
     """
-    Given a google 'service' object, return a list of
-    calendars.  Each calendar is represented by a dict.
-    The returned list is sorted to have
-    the primary calendar first, and selected (that is, displayed in
-    Google Calendars web app) calendars before unselected calendars.
+    currently set up to log a users calendar for the week. This is were parsing of calendar data will happen.
+    returns None
     
-    pseudo code:
+    potential pseudo code:
     get cals
     key into reminder cal
     ask for all events for today.
@@ -380,12 +198,11 @@ def list_calendars(service):
     then what??
     
     """
-    # TODO: this is where the cal is requested.
-    # TODO: get all events from reminder cal for today.
 
     app.logger.debug("Entering list_calendars")
     # get all calendars on gmail account.
     calendar_list = service.calendarList().list().execute()["items"]  # TODO: understand this api request
+
     f = open('server_log.txt', 'a')
     f.write("\n ------- SOMEONE CLICKED THE BUTTON. CAL LIST:\n")
 
@@ -398,7 +215,6 @@ def list_calendars(service):
     timeMin = today.isoformat()
     timeMax = oneWeek.isoformat()
 
-    result = []
     for cal in calendar_list:
         # write all calendar to log. we will use the cal id to get info
         f.write("\nCAL IS:\n")
@@ -414,51 +230,7 @@ def list_calendars(service):
             f.write(event.__str__() + "\n")
 
     f.close()
-    return sorted(result, key=cal_sort_key)
-
-
-def cal_sort_key(cal):
-    """
-    Sort key for the list of calendars:  primary calendar first,
-    then other selected calendars, then unselected calendars.
-    (" " sorts before "X", and tuples are compared piecewise)
-    """
-    if cal["selected"]:
-        selected_key = " "
-    else:
-        selected_key = "X"
-    if cal["primary"]:
-        primary_key = " "
-    else:
-        primary_key = "X"
-    return (primary_key, selected_key, cal["summary"])
-
-
-#################
-#
-# Functions used within the templates
-#
-#################
-
-@app.template_filter('fmtdate')
-def format_arrow_date(date):
-    try:
-        normal = arrow.get(date)
-        return normal.format("ddd MM/DD/YYYY")
-    except:
-        return "(bad date)"
-
-
-@app.template_filter('fmttime')
-def format_arrow_time(time):
-    try:
-        normal = arrow.get(time)
-        return normal.format("HH:mm")
-    except:
-        return "(bad time)"
-
-
-#############
+    return None
 
 
 if __name__ == "__main__":
