@@ -23,6 +23,8 @@ sys.path.insert(0, "./secrets/")
 import CONFIG
 import admin_secrets  # Per-machine secrets
 
+import process_reminders as process
+
 
 # Globals
 app = flask.Flask(__name__)
@@ -71,7 +73,7 @@ def generate():
     # NOTE: below is a way for you to save data in the session(?) variable.
     # flask.g.calendars = list_calendars(gcal_service)
 
-    list_calendars(gcal_service)
+    reminderList = generateReminders(gcal_service)
 
     return render_template('success.html')
 
@@ -184,10 +186,10 @@ def oauth2callback():
 #  Functions (NOT pages) that return some information
 
 
-def list_calendars(service):
+def generateReminders(service):
     """
     currently set up to log a users calendar for the week. This is were parsing of calendar data will happen.
-    returns None
+    returns a list of reminder instances.
     
     potential pseudo code:
     get cals
@@ -215,6 +217,8 @@ def list_calendars(service):
     timeMin = today.isoformat()
     timeMax = oneWeek.isoformat()
 
+    reminderDict = {}
+    # don't look at all cal, just reminder cal
     for cal in calendar_list:
         # write all calendar to log. we will use the cal id to get info
         f.write("\nCAL IS:\n")
@@ -225,12 +229,23 @@ def list_calendars(service):
 
         # write all of the calendars events to logs
         f.write("\n-----EVENTS ARE: \n")
+        eventNum = 0
         for event in events:
+            if "description" in event:
+                print("FOUND DES")
+                print(event['description'])
+                # process event
+                value = process.create_reminders(event)
+                key = eventNum
+                reminderDict[key] = value
+                eventNum += 1
+
             f.write("\n---EVENT: \n")
             f.write(event.__str__() + "\n")
 
     f.close()
-    return None
+    print(reminderDict)
+    return reminderDict
 
 
 if __name__ == "__main__":
