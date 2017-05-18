@@ -73,15 +73,25 @@ def generate():
     # NOTE: below is a way for you to save data in the session(?) variable.
     # flask.g.calendars = list_calendars(gcal_service)
 
-    reminderDict = generateReminders(gcal_service)
+    allReminders = generateReminders(gcal_service)
     """
-    reminderDict should look like
-    reminderDict = {
+    allReminders should look like
+    allReminders = {  
+        0 : {
         Foster Name : "John Smith",
         Foster Email : "jsmith@email.com",
         Animal Name(s) : "Fluffy Bunny",
         Medication(s) : "Love, Hugs",
         Notes : "Please give a large dose twice a day until condition improves. Oh, and don't forget to email us back!"
+        }
+        1 : {
+        Foster Name : "blah",
+        Foster Email : "blah",
+        Animal Name(s) : "blah",
+        Medication(s) : "blah",
+        Notes : "blah"
+        }
+        and so on
     }
     """
 
@@ -221,7 +231,6 @@ def generateReminders(service):
     today = arrow.now('local')
     today = today.fromdate(today, tzinfo='local')
 
-    print("TODAY IS:", today)
     tomorrow = today.replace(days=+1)  # TODO 'oneWeek' replace after GH log
     oneWeek = today.replace(days=+7)
     timeMin = today.isoformat()
@@ -252,7 +261,6 @@ def generateReminders(service):
             f.write(event.__str__() + "\n")
 
     f.close()
-    print(reminderDict)
     return reminderDict
 
 
@@ -260,5 +268,5 @@ if __name__ == "__main__":
     # App is created above so that it will
     # exist whether this is 'main' or not
     # (e.g., if we are running under green unicorn)
-    print("Opening for global access on port {}".format(CONFIG.PORT))
+    # print("Opening for global access on port {}".format(CONFIG.PORT))
     app.run(port=CONFIG.PORT, host="0.0.0.0")
