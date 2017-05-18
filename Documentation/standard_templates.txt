@@ -1,0 +1,15 @@
+Blank
+Foster Name:
+Foster Email: 
+Animal Name(s):
+Medication(s):
+Notes:
+
+Filled out this could look like:
+
+Foster Name: John Smith
+Foster Email: jsmith@email.com
+Animal Name(s): Fluffy Bunny
+Medication(s): Love, Hugs
+Notes: Please give a large dose twice a day until condition improves.
+Oh, and don't forget to email us back!

@@ -22,11 +22,11 @@ def create_reminders(event):
     
     Dictionary looks like
     dict = {
-        Foster Name : "John Smith",
-        Foster Email : "jsmith@email.com",
-        Animal Name(s) : "Fluffy Bunny",
-        Medication(s) : "Love, Hugs",
-        Notes : "Please give a large dose twice a day until condition improves. Oh, and don't forget to email us back!"
+        "Foster Name": "John Smith",
+        "Foster Email": "jsmith@email.com",
+        "Animal Name(s)": "Fluffy Bunny",
+        "Medication(s)": "Love, Hugs",
+        "Notes": "Please give a large dose twice a day until condition improves. Oh, and don't forget to email us back!"
     }
 
     """
@@ -53,6 +53,8 @@ def create_reminders(event):
     leftOver = ''
     for i in range(ctr, len(lines)):
         leftOver += lines[i]
-    reminder["Notes"] += " " + leftOver
+    reminder["Notes"] = (reminder["Notes"] + " " + leftOver).strip()
+
+
 
     return reminder
