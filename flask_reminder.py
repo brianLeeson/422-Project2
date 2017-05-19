@@ -244,28 +244,15 @@ def oauth2callback():
 
 #  Functions (NOT pages) that return some information
 
-
 def generateReminders(service):
     """
-    currently set up to log a users calendar for the week. This is were parsing of calendar data will happen.
-    returns a list of reminder instances.
-    
-    potential pseudo code:
-    get cals
-    key into reminder cal
-    ask for all events for today.
-    parse those events.
-    package to send to amie
-    then what??
-    
+    This function parses reminder cal data
+    returns a dict of reminder instances.
     """
 
-    app.logger.debug("Entering list_calendars")
+    app.logger.debug("Entering generateReminders")
     # get all calendars on gmail account.
     calendar_list = service.calendarList().list().execute()["items"]  # TODO: understand this api request
-
-    f = open('server_log.txt', 'a')
-    f.write("\n ------- SOMEONE CLICKED THE BUTTON. CAL LIST:\n")
 
     today = arrow.now('local')
     today = today.fromdate(today, tzinfo='local')
@@ -275,31 +262,19 @@ def generateReminders(service):
     timeMax = tomorrow.isoformat()
 
     reminderDict = {}
-    # don't look at all cal, just reminder cal
-    cal = calendar_list[REMINDER_ID]
+    for cal in calendar_list:
+        if cal['id'] == REMINDER_ID:
+            events = service.events().list(calendarId=cal['id'], timeMin=timeMin,
+                                           timeMax=timeMax, singleEvents=True).execute()['items']
+            eventNum = 0
+            for event in events:
+                if "description" in event:
+                    # process event
+                    value = process.create_reminders(event)
+                    key = eventNum
+                    reminderDict[key] = value
+                    eventNum += 1
 
-    # write all calendar to log. we will use the cal id to get info
-    f.write("\nCAL IS:\n")
-    f.write(cal.__str__() + "\n")
-
-    events = service.events().list(calendarId=cal['id'], timeMin=timeMin,
-                                   timeMax=timeMax, singleEvents=True).execute()['items']
-
-    # write all of the calendars events to logs
-    f.write("\n-----EVENTS ARE: \n")
-    eventNum = 0
-    for event in events:
-        if "description" in event:
-            # process event
-            value = process.create_reminders(event)
-            key = eventNum
-            reminderDict[key] = value
-            eventNum += 1
-
-        f.write("\n---EVENT: \n")
-        f.write(event.__str__() + "\n")
-
-    f.close()
     return reminderDict
 
 
