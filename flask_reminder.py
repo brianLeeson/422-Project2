@@ -34,9 +34,10 @@ app.secret_key = CONFIG.secret_key
 
 SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
 CLIENT_SECRET_FILE = admin_secrets.google_key_file
-APPLICATION_NAME = 'MeetMe class project'
+REMINDER_ID = "green-hill.org_o40u2qofc9v2d273gdt4eihaus@group.calendar.google.com"
 
 # Pages (routed from URLs)
+
 
 @app.route("/")
 @app.route("/index")
@@ -49,8 +50,8 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/generate')
-def generate():
+@app.route('/authenticate')
+def authenticate():
     """
     This function checks if the server has valid credentials \
     and if not asks for them: flask.redirect(flask.url_for('oauth2callback')) 
@@ -63,15 +64,21 @@ def generate():
         app.logger.debug("Redirecting to authorization")
         return flask.redirect(flask.url_for('oauth2callback'))
 
+    return render_template('success.html')
+
+
+@app.route('/generate')
+def generate():
+    """
+    This function gets all reminder event for today and returns them as a json object
+    This function assumes that valid credentials have already been obtained.
+    """
+    app.logger.debug("Generating reminders")
+    credentials = valid_credentials()
+    if not credentials:
+        return None
+
     gcal_service = get_gcal_service(credentials)
-    app.logger.debug("Returned from get_gcal_service")
-
-    # NOTE: looks like parsed data from l_c will be saved in session(?) and not sent as json in response to ajax
-    # do we want to keep or have sending the parsed data not happen right after we get auth.
-    # probably should do right after auth.
-
-    # NOTE: below is a way for you to save data in the session(?) variable.
-    # flask.g.calendars = list_calendars(gcal_service)
 
     allReminders = generateReminders(gcal_service)
     """
@@ -91,11 +98,43 @@ def generate():
         Medication(s) : "blah",
         Notes : "blah"
         }
+        ...and so on
+    }
+    """
+
+    return jsonify(allReminders)
+
+
+@app.route('/send_emails')
+def send_emails():
+    """
+    This function will receive an ajax request from the server containing the data of who should be emailed.
+    Parse that data
+    send email to fosters in that data.
+    return json object containing successful message if successful, failure message if not.
+    """
+    """
+    data will come from the client looking like this:
+    allReminders = {  
+        0 : {
+        Foster Name : "John Smith",
+        Foster Email : "jsmith@email.com",
+        Animal Name(s) : "Fluffy Bunny",
+        Medication(s) : "Love, Hugs",
+        Notes : "Please give a large dose twice a day until condition improves. Oh, and don't forget to email us back!"
+        }
+        1 : {
+        Foster Name : "blah",
+        Foster Email : "blah",
+        Animal Name(s) : "blah",
+        Medication(s) : "blah",
+        Notes : "blah"
+        }
         and so on
     }
     """
 
-    return render_template('success.html')
+    return jsonify("Something signifying success.")
 
 ####
 #
@@ -200,7 +239,7 @@ def oauth2callback():
         # but for the moment I'll just log it and go back to
         # the main screen
         app.logger.debug("Got credentials")
-        return flask.redirect(flask.url_for('generate'))
+        return flask.redirect(flask.url_for('authenticate'))
 
 
 #  Functions (NOT pages) that return some information
@@ -230,35 +269,35 @@ def generateReminders(service):
 
     today = arrow.now('local')
     today = today.fromdate(today, tzinfo='local')
+    tomorrow = today.replace(days=+1)  # up until but not including "tomorrow"
 
-    tomorrow = today.replace(days=+1)  # TODO 'oneWeek' replace after GH log
-    oneWeek = today.replace(days=+7)
     timeMin = today.isoformat()
-    timeMax = oneWeek.isoformat()
+    timeMax = tomorrow.isoformat()
 
     reminderDict = {}
     # don't look at all cal, just reminder cal
-    for cal in calendar_list:
-        # write all calendar to log. we will use the cal id to get info
-        f.write("\nCAL IS:\n")
-        f.write(cal.__str__() + "\n")
+    cal = calendar_list[REMINDER_ID]
 
-        events = service.events().list(calendarId=cal['id'], timeMin=timeMin,
-                                       timeMax=timeMax, singleEvents=True).execute()['items']
+    # write all calendar to log. we will use the cal id to get info
+    f.write("\nCAL IS:\n")
+    f.write(cal.__str__() + "\n")
 
-        # write all of the calendars events to logs
-        f.write("\n-----EVENTS ARE: \n")
-        eventNum = 0
-        for event in events:
-            if "description" in event:
-                # process event
-                value = process.create_reminders(event)
-                key = eventNum
-                reminderDict[key] = value
-                eventNum += 1
+    events = service.events().list(calendarId=cal['id'], timeMin=timeMin,
+                                   timeMax=timeMax, singleEvents=True).execute()['items']
 
-            f.write("\n---EVENT: \n")
-            f.write(event.__str__() + "\n")
+    # write all of the calendars events to logs
+    f.write("\n-----EVENTS ARE: \n")
+    eventNum = 0
+    for event in events:
+        if "description" in event:
+            # process event
+            value = process.create_reminders(event)
+            key = eventNum
+            reminderDict[key] = value
+            eventNum += 1
+
+        f.write("\n---EVENT: \n")
+        f.write(event.__str__() + "\n")
 
     f.close()
     return reminderDict
