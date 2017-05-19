@@ -1,11 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
     <title>Complete</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!--we used bootstrap to make out page work better on differently sized screens, mostly mobile-->
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/latest/css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/css/reminder.css"/>
+
+    <!-- jquery from a content distribution network; probably cached -->
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+    <!--don't think we need below. testing required-->
+    <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+
+    <!--remove below after date range picker is removed.-->
+    <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+
 </head>
+
 <body>
     <h1>Logging complete!</h1>
 
+    <script>
+    <!--inline js here if you like-->
+     $.getJSON("/generate", {}, function(e) {})
+    </script>
 </body>
 </html>
