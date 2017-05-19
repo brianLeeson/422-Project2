@@ -34,6 +34,8 @@ Setup:
  * Send reminders. If successful, a list of sent reminders will be shown.
  
  ### Issues:
+ This has not been tested with concurrent connections, behavior unknown. As this service is built for one 
+ person to connect per day, concurrency is not an immediate concern.
  
  ### Platforms:
 
