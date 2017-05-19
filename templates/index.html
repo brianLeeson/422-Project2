@@ -26,43 +26,9 @@
 
             <h1>Data Checking</h1>
             <p>This webpage will write the contents of your calender in the date range to a log file for us to read.</p>
-            <p>No need to change the range, unless you'd like to. Please click the Button once and enter your credentials. Then you're done!</p>
-            <p>The date selection to is only for getting data in this early stage. Med reminders are planned to only go out the day they are due.</p>
+            <p>Please click the Button once and enter your credentials. Then you're done!</p>
 
-            <h3>Date range</h3>
-            <form action="/setrange" method="post">
-                <!--the stuff in the brace percent below is jinja code. weird right.-->
-                <input type="text" name="daterange" size="12"
-                {% if session.daterange is defined %}
-                       value="{{session.daterange}}"
-                {% endif %}
-                       class="pull-down"
-                       style="background: #fff; cursor: pointer; padding: 5px 10px;
-                       border: 1px solid #ccc; width: 12em" >
-                <script type="text/javascript">
-                    $(function() {
-                        $('input[name="daterange"]').daterangepicker({
-                            ranges: {
-                                'Today': [moment(), moment()],
-                                'Tomorrow':[moment().add(1, 'days'),
-                                    moment().add(1, 'days')],
-                                'This week':[moment(), moment().endOf('week')],
-                                'Next week':[moment().add(7, 'days').startOf('week'),
-                                    moment().add(7, 'days').endOf('week')],
-                                'This month':[moment(), moment().endOf('month')],
-                                'Within two weeks':[moment(),moment().add(15, 'days')]
-                             }
-                        });
-                    });
-                </script>
-                <br/>
-
-                <h3>Time Range</h3>
-                <input type="time" name="startTime" value="00:00:00">
-                to
-                <input type="time" name="endTime" value="23:59:00">
-
-                <br>
+            <form action="/generate">
                 <input type="submit" value="Generate Log" />
             </form>
 

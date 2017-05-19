@@ -61,8 +61,8 @@ service:	env
 # Nosetest will run all files of the form test_*.py
 
 # TODO: implement nosetests?
-#test:	env
-#	$(INVENV) nosetests
+test:	env
+	$(INVENV) nosetests
 
 
 # 'clean' should leave the project ready to run
