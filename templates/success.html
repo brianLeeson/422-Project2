@@ -23,9 +23,51 @@
 <body>
     <h1>Logging complete!</h1>
 
+
+    <div id="tablespace">
+        <table id="tabletime" style="width:80%;border: 1px solid black;">
+            <tr>
+                <th id="send">Send Email?</th>
+                <th id="fostername">Foster Name</th>
+                <th id="fosteremail">Foster Email</th>
+                <th id="animal">Animal Name(s)</th>
+                <th id="meds">Medication Details</th>
+                <th id="notes">Notes</th>
+            </tr>
+
+        </table>
+
+<!-- JSON Data format:
+    { 0: {Foster Name : "John Smith",
+        Foster Email : "jsmith@email.com",
+        Animal Name(s) : "Fluffy Bunny",
+        Medication(s) : "Love, Hugs",
+        Notes : "blah blah blah blah"}, 1: {....}, 2: {....} } -->
+
+
+    </div>
     <script>
     <!--inline js here if you like-->
-     $.getJSON("/generate", {}, function(e) {})
+        $(document).ready(function() {
+            $.ajax({
+                url: "/generate",
+                type: 'GET',
+                cache: false,
+                success: function(animals) {
+                    console.log("success", animals);
+                    var fields = ["Foster Name", "Foster Email", "Animal Name(s)", "Medication(s)", "Notes"];
+                    var tableRef = $("#tabletime");
+                    for (i = 0; i < 2; i++) {
+                        tableRef.append('<tr' + ' id=' + i + '>' + '</tr>');
+                        var rowRef = $("#" + i );
+                        rowRef.append('<td>' + "this will be a send checkbox" + '</td>');
+                        for (j = 0; j < fields.length; j++) {
+                            rowRef.append('<td>' + animals["" + i + ""][fields[j]] + '</td>' );
+                        }
+                    }
+                }
+            })
+        });
     </script>
 </body>
 </html>
