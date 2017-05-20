@@ -104,6 +104,21 @@ def generate():
 
     return jsonify(allReminders)
 
+@app.route('/fakedata')
+def fakedata():
+    """ Fake data for Amie to work with correctly formatted JSON objects..."""
+    animal_dict = {0: {"Foster Name": "John Smith", "Foster Email": "jsmith@email.com",
+                       "Animal Name(s)": "Fluffy Bunny", "Medication(s)": "Love, Hugs",
+                        "Notes": "blah blah blah blah"},
+                   1: {"Foster Name": "Brian Leeson", "Foster Email": "bleeson@email.com",
+                       "Animal Name(s)": "Oreo", "Medication(s)": "Milk",
+                        "Notes": "meow meow meow meow meow"},
+                   2: {"Foster Name": "Amie Corso", "Foster Email":"acorso@uoregon.edu",
+                       "Animal Name(s)": "Fatface, Marmot", "Medication(s)": "Diet Pills",
+                       "Notes": "Get one of those little cat leashes and walk these thugs"}
+                   }
+    return jsonify(animal_dict)
+
 
 @app.route('/send_emails')
 def send_emails():
