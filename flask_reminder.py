@@ -119,6 +119,11 @@ def fakedata():
                    }
     return jsonify(animal_dict)
 
+@app.route('/testsendemails')
+def testsendemails():
+    """ temporary route to explore form submission"""
+
+    return None
 
 @app.route('/send_emails')
 def send_emails():
