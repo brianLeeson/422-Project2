@@ -104,7 +104,7 @@ def generate():
 
     return jsonify(allReminders)
 
-@app.route('/fakedata')
+@app.route('/fakedata', methods=['GET','POST'])
 def fakedata():
     """ Fake data for Amie to work with correctly formatted JSON objects..."""
     animal_dict = {0: {"Foster Name": "John Smith", "Foster Email": "jsmith@email.com",
@@ -119,11 +119,12 @@ def fakedata():
                    }
     return jsonify(animal_dict)
 
-@app.route('/testsendemails')
+@app.route('/testsendemails', methods=['GET','POST'])
 def testsendemails():
     """ temporary route to explore form submission"""
 
-    return None
+    return jsonify("Something indicating success.")
+
 
 @app.route('/send_emails')
 def send_emails():
