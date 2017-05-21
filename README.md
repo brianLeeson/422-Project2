@@ -4,6 +4,7 @@ The project authors are:
 1. Brian Leeson
 2. Jamie Zimmerman
 3. Amie Corso
+
 Credit: Flask gcal auth and config code based off of a CIS-322 project whose code base the instructor
 (Michal Young) wrote
 
