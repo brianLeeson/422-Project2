@@ -1,11 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
     <title>Complete</title>
-</head>
-<body>
-    <h1>Logging complete!</h1>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <!--we used bootstrap to make out page work better on differently sized screens, mostly mobile-->
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/latest/css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/css/reminder.css"/>
+
+    <!-- jquery from a content distribution network; probably cached -->
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+    <!--don't think we need below. testing required-->
+    <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+
+    <!--remove below after date range picker is removed.-->
+    <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+
+    <style>
+        table, th, td {
+            border: 2px solid black;
+            background-color: #cefdce;
+        }
+        th, td {
+            padding: 8px;
+        }
+        th {
+            text-align: center;
+        }
+
+
+
+    </style>
+</head>
+
+<body>
+
+    <img src="http://www.green-hill.org/wp-content/uploads/2017/02/GH_logo_header_3.png" alt="Greenhill Logo" style="width:600px"/>
+
+    <h3 style="text-align:center">Foster Reminders</h3>
+    <br>
+    <h6>Logging complete! Reminders for ___(insert date?)___</h6>
+
+        <p> Select reminders to be sent to fosters.<br> When all have been selected, click on "Preview Emails"</p>
+    <div id="tablespace">
+        <form onsubmit="processForm();">
+            <table id="tabletime" style="width:80%;border: 1px solid black;">
+                <tr>
+                    <th id="send">Send Email?</th>
+                    <th id="fostername">Foster Name</th>
+                    <th id="fosteremail">Foster Email</th>
+                    <th id="animal">Animal Name(s)</th>
+                    <th id="meds">Medication Details</th>
+                    <th id="notes">Notes</th>
+                </tr>
+
+            </table>
+            <input type="submit" value="Preview Emails">
+        </form>
+    </div>
+
+
+    <script>
+
+/* format of retrieved JSON Data:
+    { 0: {Foster Name : "John Smith",
+        Foster Email : "jsmith@email.com",
+        Animal Name(s) : "Fluffy Bunny",
+        Medication(s) : "Love, Hugs",
+        Notes : "blah blah blah blah"}, 1: {....}, 2: {....} }
+*/
+
+
+var remindersGlobal = {};
+
+function populateGlobal(aGlobal, JSON, JSONlength) {
+    for (var prop in JSON) {
+        aGlobal[prop] = JSON[prop];
+    }
+    aGlobal["length"] = JSONlength;
+};
+
+
+// AJAX request to '/generate' - get reminder calendar data
+$(document).ready(function() {
+    $.ajax({
+        url: "/fakedata",
+        type: 'GET',
+        cache: false,
+        success: function(reminders) {
+            console.log("success", reminders);
+            var count = Object.keys(reminders).length;
+            console.log("count =", count);
+            populateGlobal(remindersGlobal, reminders, count);
+
+            var fields = ["Foster Name", "Foster Email", "Animal Name(s)", "Medication(s)", "Notes"];
+            var tableRef = $("#tabletime");
+            for (i = 0; i < count; i++) {
+                tableRef.append('<tr' + ' id=row' + i + '>' + '</tr>');
+                var rowRef = $("#row" + i );
+                rowRef.append('<input id="box' + i + '" type="checkbox" name="emailselect" value="' + i + '">');
+                for (j = 0; j < fields.length; j++) {
+                    rowRef.append('<td>' + reminders["" + i + ""][fields[j]] + '</td>' );
+                }
+            }
+        }
+    })
+});
+
+
+
+console.log("Outside AJAX function: ", remindersGlobal);
+
+
+// processes form information to send selected data for emailing
+function processForm() {
+    var reminders_to_email = {};
+    var unselected_reminders = {};
+    for (i = 0; i < remindersGlobal["length"]; i++) {
+        var current_reminder = document.getElementById("box" + i);
+        console.log("Entry " + i + ": ", current_reminder.checked);
+        if (current_reminder.checked == true) {
+            reminders_to_email[current_reminder.value] = remindersGlobal[current_reminder.value];
+        }
+        else {
+            unselected_reminders[current_reminder.value] = remindersGlobal[current_reminder.value];
+        }
+    }
+    console.log("After parsing form data... \n reminders_to_email = ", reminders_to_email);
+    console.log("unselected_reminders = ", unselected_reminders);
+
+    var dataPacket = JSON.stringify({"reminders_to_email" : reminders_to_email, "unselected_reminders" : unselected_reminders});
+    console.log("dataPacket: ", dataPacket);
+
+
+    $.post('/send_emails', dataPacket);
+
+    /*
+    {
+        type:'POST',
+        url: '/send_emails',
+        contentType: 'application/json',
+        data: dataPacket,
+        datatype: 'json',
+        cache: false,
+        async: false,
+        success: function(result){
+            alert(result);
+        }
+    });
+    */
+
+
+    return false;}
+
+    </script>
 </body>
 </html>
