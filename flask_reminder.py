@@ -1,4 +1,6 @@
 import flask
+import json
+import urllib.request
 from flask import render_template
 from flask import request
 from flask import url_for
@@ -122,6 +124,12 @@ def fakedata():
 @app.route('/testsendemails', methods=['GET','POST'])
 def testsendemails():
     """ temporary route to explore form submission"""
+    #incoming_data = jsonify(request.get_json())
+    #incoming_data = request.args.get("thedata", type=str)
+    #str_response = response.readall().decode('utf-8')
+    #incoming_data = urllib.request.unquote(request.query_string)
+    incoming_data = request.args.to_dict()
+    print("Printing incoming data: ", incoming_data)
 
     return jsonify("Something indicating success.")
 
