@@ -1,4 +1,8 @@
-Blank
+Reminder events in google calendars must have this format in their description fields. At least the email and med field
+must be filed out.
+
+Blank form
+
 Foster Name:
 Foster Email: 
 Animal Name(s):
