@@ -46,12 +46,21 @@ Setup:
  ### Details:
 
  ### Ideas for Project Improvement:
- This project is specifically set up for Greenhill specifically and would need to be changed for other users
- or others uses within Greenhill. For example, reminder appointments would need to look at the appointment calendar. This
+ This project is set up for Greenhill specifically and would need to be changed for other users
+ or other uses within Greenhill. For example, reminder appointments would need to look at the appointment calendar. This
  could be made generic if we looked at all calendars for the standard template. This would require that the parsing be
- ensured to be robust.
+ more robust.
  
  This server is geared to run on our school server at a specific port number. This is working, but not ideal.
- Working towards running the flask server on a hosting service like heroku would provide security and stability.
+ Working towards running the flask server on a hosting service like Heroku would provide security and stability.
  
+We would like to ensure that, once email reminders have been sent for the day, we can prevent a second round of emails
+from being sent.  Or, alternatively, a subsequent daily attempt(s) to send emails would only display previously unsent
+emails, or would display information about which emails have already been sent (in case a user did indeed want to send
+one again).  This might be implemented by saving a date-specific variable globally on the server, and using that flag
+to determine behaviors.
 
+Security is another concern for this project.  By hosting on ix we are transferring data using HTTP, which means that
+email addresses and foster information could be spied on.  Although it's not particularly sensitive, there are real
+email addresses being passed in our url query strings... An improvement to this project would be to host on a server
+that uses HTTPS?  And other security things?...
