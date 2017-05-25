@@ -12,41 +12,68 @@
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 
     <!--don't think we need below. testing required-->
-    <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-
-    <!--remove below after date range picker is removed.-->
-    <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
-    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
 
     <style>
-        table, th, td {
-            border: 2px solid black;
-            background-color: #cefdce;
-        }
-        th, td {
-            padding: 8px;
-        }
-        th {
-            text-align: center;
-        }
+
+    body {
+        background-color: #f2f2f2;
+        font-family: 'Verdana', sans-serif;
+
+    }
+
+    table, th, td {
+        border: 2px solid black;
+        background-color:  #ccffcc;
+    }
+    table {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    tr:hover td {
+        background-color: #b3ffb3;
+    }
+
+    th, td {
+        padding: 8px;
+    }
+
+    th {
+        text-align: center;
+    }
+
+    input[type=checkbox] {
+      /* Double-sized Checkboxes */
+      -ms-transform: scale(2); /* IE */
+      -moz-transform: scale(2); /* FF */
+      -webkit-transform: scale(2); /* Safari and Chrome */
+      -o-transform: scale(2); /* Opera */
+      padding: 10px;
+    }
+
+    #buttonholder {
+        text-align: center;
+        margin: 10px;
+    }
 
 
-
-    </style>
+</style>
 </head>
 
 <body>
 
     <img src="http://www.green-hill.org/wp-content/uploads/2017/02/GH_logo_header_3.png" alt="Greenhill Logo" style="width:600px"/>
+    <img src="https://lh5.ggpht.com/2q-Bmr3zH6Z3lN8wdDEtx4QVU6MUL88uyIRf_GQh-UKZO3yWintyHT2TBbfwnnndUME=w300" alt="robologo" style="width:100px;"/>
+    <h2 style="text-align:center">ReminderBot</h2><br>
 
-    <h3 style="text-align:center">Foster Reminders</h3>
-    <br>
-    <h6>Logging complete! Reminders for ___(insert date?)___</h6>
+    <div style="text-align: center">
+    <h6>Logging complete! Displaying reminders for </h6> <h6 id="date"></h6>
 
-        <p> Select reminders to be sent to fosters.<br> When all have been selected, click on "Preview Emails"</p>
-    <div id="tablespace">
+        <p> Select reminders to be sent to fosters.<br> When done selecting, click on "Preview Emails"</p>
+    </div>
+    <div id="tablespace" class="container">
         <form onsubmit="processForm();">
-            <table id="tabletime" style="width:80%;border: 1px solid black;">
+            <table id="tabletime" class="btn-holder" style="width:95%;border: 1px solid black; float:center;">
                 <tr>
                     <th id="send">Send Email?</th>
                     <th id="fostername">Foster Name</th>
@@ -57,7 +84,9 @@
                 </tr>
 
             </table>
-            <input type="submit" value="Preview Emails">
+            <div id="buttonholder">
+                <input type="submit" id="previewemails" value="Preview Emails">
+            </div>
         </form>
     </div>
 
@@ -72,6 +101,13 @@
         Notes : "blah blah blah blah"}, 1: {....}, 2: {....} }
 */
 
+days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+n = new Date();
+y = n.getFullYear()
+m = n.getMonth() + 1;
+d = n.getDate();
+day = days[n.getDay()];
+document.getElementById("date").innerHTML = "<strong> " + day + ", " + m + "/" + d + "/" + y + "</strong>";
 
 var remindersGlobal = {};
 
@@ -100,7 +136,9 @@ $(document).ready(function() {
             for (i = 0; i < count; i++) {
                 tableRef.append('<tr' + ' id=row' + i + '>' + '</tr>');
                 var rowRef = $("#row" + i );
-                rowRef.append('<input id="box' + i + '" type="checkbox" name="emailselect" value="' + i + '">');
+                rowRef.append('<td id="boxCell' + i + '" style="text-align:center; vertical-align:middle;"></td>');
+                var tdRef = $("#boxCell" + i);
+                tdRef.append('<input id="box' + i + '" type="checkbox" name="emailselect" value="' + i + '">');
                 for (j = 0; j < fields.length; j++) {
                     rowRef.append('<td>' + reminders["" + i + ""][fields[j]] + '</td>' );
                 }
@@ -137,7 +175,6 @@ function processForm() {
     $.getJSON( '/testsendemails', dataPacket, function(e) {
         alert("We have success!")}
         );
-
 
     return false;}
 

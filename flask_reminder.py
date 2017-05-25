@@ -119,7 +119,11 @@ def fakedata():
                         "Notes": "meow meow meow meow meow"},
                    2: {"Foster Name": "Amie Corso", "Foster Email":"acorso@uoregon.edu",
                        "Animal Name(s)": "Fatface, Marmot", "Medication(s)": "Diet Pills",
-                       "Notes": "Get one of those little cat leashes and walk these thugs"}
+                       "Notes": "Get one of those little cat leashes and walk these thugs"},
+                   3: {"Foster Name": "Jamie Zimmerman", "Foster Email": "jamiez@uoregon.edu",
+                       "Animal Name(s)": "Lucky", "Medication(s)": "Chiropractor/Acu",
+                       "Notes": "Paleo diet only"
+                       }
                    }
     return jsonify(animal_dict)
 
