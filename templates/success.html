@@ -134,23 +134,9 @@ function processForm() {
     var dataPacket = JSON.stringify({"reminders_to_email" : reminders_to_email, "unselected_reminders" : unselected_reminders});
     console.log("dataPacket: ", dataPacket);
 
-
-    $.post('/send_emails', dataPacket);
-
-    /*
-    {
-        type:'POST',
-        url: '/send_emails',
-        contentType: 'application/json',
-        data: dataPacket,
-        datatype: 'json',
-        cache: false,
-        async: false,
-        success: function(result){
-            alert(result);
-        }
-    });
-    */
+    $.getJSON( '/testsendemails', dataPacket, function(e) {
+        alert("We have success!")}
+        );
 
 
     return false;}
