@@ -10,6 +10,8 @@ import uuid
 import json
 import logging
 
+import ast
+
 # Date handling 
 import arrow  # Replacement for datetime, based on moment.js
 
@@ -108,27 +110,6 @@ def generate():
 
     return jsonify(allReminders)
 
-'''
-@app.route('/fakedata', methods=['GET','POST'])
-def fakedata():
-    """ Fake data for Amie to work with correctly formatted JSON objects..."""
-    animal_dict = {0: {"Foster Name": "John Smith", "Foster Email": "jsmith@email.com",
-                       "Animal Name(s)": "Fluffy Bunny", "Medication(s)": "Love, Hugs",
-                        "Notes": "blah blah blah blah"},
-                   1: {"Foster Name": "Brian Leeson", "Foster Email": "bleeson@email.com",
-                       "Animal Name(s)": "Oreo", "Medication(s)": "Milk",
-                        "Notes": "meow meow meow meow meow"},
-                   2: {"Foster Name": "Amie Corso", "Foster Email":"acorso@uoregon.edu",
-                       "Animal Name(s)": "Fatface, Marmot", "Medication(s)": "Diet Pills",
-                       "Notes": "Get one of those little cat leashes and walk these thugs"},
-                   3: {"Foster Name": "Jamie Zimmerman", "Foster Email": "jamiez@uoregon.edu",
-                       "Animal Name(s)": "Lucky", "Medication(s)": "Chiropractor/Acu",
-                       "Notes": "Paleo diet only"
-                       }
-                   }
-    return jsonify(animal_dict)
-'''
-
 
 @app.route('/send_emails', methods=['GET','POST'])
 def send_emails():
@@ -139,11 +120,17 @@ def send_emails():
     return json object containing successful message if successful, failure message if not.
     """
     """
-    incoming_data looks like:
-    {'': 
-        '{"reminders_to_email":
+    I think incoming_data =
+    {"reminders_to_email":
             {"0":
-            {"Animal Name(s)":"Fluffy Bunny","Foster Email":"jsmith@email.com","Foster Name":"John Smith","Medication(s)":"Love, Hugs","Notes":"Please give a large dose twice a day until condition improves. Oh, and don\'t forget to email us back!"}},"unselected_reminders":{}}'}
+                {"Animal Name(s)":"Fluffy Bunny",
+                "Foster Email":"jsmith@email.com",
+                "Foster Name":"John Smith",
+                "Medication(s)":"Love, Hugs",
+                "Notes":"Please give a large dose twice a day until condition improves. Oh, and don\'t forget to email us back!"}
+            },
+            "unselected_reminders":{}
+    }
 
     """
 
