@@ -1,13 +1,7 @@
 import flask
-import json
-import urllib.request
 from flask import render_template
 from flask import request
-from flask import url_for
 from flask import jsonify
-import uuid
-import ast
-import json
 import logging
 
 import ast
@@ -120,7 +114,7 @@ def send_emails():
     return json object containing successful message if successful, failure message if not.
     """
     """
-    I think incoming_data =
+    I think the_dictionary =
     {"reminders_to_email":
             {"0":
                 {"Animal Name(s)":"Fluffy Bunny",
@@ -131,17 +125,16 @@ def send_emails():
             },
             "unselected_reminders":{}
     }
-
     """
 
     incoming_data = request.args.to_dict()
     print("Printing incoming data: ", incoming_data[''])
     the_dictionary = ast.literal_eval(incoming_data[''])
-    #print("THE DICTIONARY:", the_dictionary)
-    #print("Type is: ", type(the_dictionary))
+    # print("THE DICTIONARY:", the_dictionary)
 
-    # in reality we'll want the return object to be a packet that contains the same data, and additional information about the emails
-    # for example, it would be great to know if any failed or anything you can find out about emails... I dunno.
+    # in reality we'll want the return object to be a packet that contains the same data, and additional information
+    # about the emails. for example, it would be great to know if any failed or anything you can find out about emails.
+    # I dunno.
     return jsonify("Something indicating success.")
 
 ####
