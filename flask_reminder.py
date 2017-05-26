@@ -108,6 +108,7 @@ def generate():
 
     return jsonify(allReminders)
 
+'''
 @app.route('/fakedata', methods=['GET','POST'])
 def fakedata():
     """ Fake data for Amie to work with correctly formatted JSON objects..."""
@@ -126,21 +127,10 @@ def fakedata():
                        }
                    }
     return jsonify(animal_dict)
-
-@app.route('/testsendemails', methods=['GET','POST'])
-def testsendemails():
-    """ temporary route to explore form submission"""
-    #incoming_data = jsonify(request.get_json())
-    #incoming_data = request.args.get("thedata", type=str)
-    #str_response = response.readall().decode('utf-8')
-    #incoming_data = urllib.request.unquote(request.query_string)
-    incoming_data = request.args.to_dict()
-    print("Printing incoming data: ", incoming_data)
-
-    return jsonify("Something indicating success.")
+'''
 
 
-@app.route('/send_emails')
+@app.route('/send_emails', methods=['GET','POST'])
 def send_emails():
     """
     This function will receive an ajax request from the server containing the data of who should be emailed.
@@ -149,27 +139,18 @@ def send_emails():
     return json object containing successful message if successful, failure message if not.
     """
     """
-    data will come from the client looking like this:
-    allReminders = {  
-        0 : {
-        Foster Name : "John Smith",
-        Foster Email : "jsmith@email.com",
-        Animal Name(s) : "Fluffy Bunny",
-        Medication(s) : "Love, Hugs",
-        Notes : "Please give a large dose twice a day until condition improves. Oh, and don't forget to email us back!"
-        }
-        1 : {
-        Foster Name : "blah",
-        Foster Email : "blah",
-        Animal Name(s) : "blah",
-        Medication(s) : "blah",
-        Notes : "blah"
-        }
-        and so on
-    }
+    incoming_data looks like:
+    {'': 
+        '{"reminders_to_email":
+            {"0":
+            {"Animal Name(s)":"Fluffy Bunny","Foster Email":"jsmith@email.com","Foster Name":"John Smith","Medication(s)":"Love, Hugs","Notes":"Please give a large dose twice a day until condition improves. Oh, and don\'t forget to email us back!"}},"unselected_reminders":{}}'}
+
     """
 
-    return jsonify("Something signifying success.")
+    incoming_data = request.args.to_dict()
+    print("Printing incoming data: ", incoming_data[""])
+
+    return jsonify("Something indicating success.")
 
 ####
 #
@@ -298,7 +279,7 @@ def generateReminders(service):
 
     reminderDict = {}
     for cal in calendar_list:
-        if cal['id'] == REMINDER_ID:
+        # if cal['id'] == REMINDER_ID: # commented out to look through all calendars.
             events = service.events().list(calendarId=cal['id'], timeMin=timeMin,
                                            timeMax=timeMax, singleEvents=True).execute()['items']
             eventNum = 0
