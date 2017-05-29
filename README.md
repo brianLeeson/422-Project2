@@ -29,7 +29,7 @@ Setup:
  * Make sure all critical dependencies are installed.
  * "git clone https://github.com/brianLeeson/422-Project2".
  * Configure and run the project with "make run".
- * Connect to the server locally with or externally at ix.cs.uoregon.edu:PORT_NUM
+ * Connect to the server locally with localhost:PORT_NUM or externally at ix.cs.uoregon.edu:PORT_NUM
  * Authenticate by clicking "TODO THING NAME"
  * Select which reminders you would like to have sent.
  * Send reminders. If successful, a list of sent reminders will be shown.
