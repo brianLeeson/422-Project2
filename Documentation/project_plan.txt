@@ -1,0 +1,47 @@
+We will be building a server that sending medication reminders to foster family for the GreenHill Humane Society. After
+meeting with the foster manager at GreenHill (GH) we came up with the following divisions of labor.
+
+The division of labor is:
+Webpage interface: Amie Corso
+Email API: Jamie Zimmerman
+Flask server, Gcal Authentication: Brian Leeson
+
+---Outline---
+
+Webpage interface
+I will be developing the client side of our application, including creating and styling the html for the various pages,
+and rendering the page behavior / server communication using Javascript.  This is going to involve learning the basics
+of html, css, Javascript, JSON exchange using jQuery, and Flask completely from zero.  The functionality of the web page
+will be simple enough - a button on the home page will prompt a Google login (Brian's domain), and after credentials are
+validated, will pull reminder data from the Google calendar of the user (ultimately Greenhill).  Brian's code will send
+this parsed reminder data to me as a JSON object, and I will render it in a way that will allow users to select which
+emails should be sent out.  They can then send these emails with the press of a button, and receive feedback about which
+emails were sent, which weren't, and (hopefully) which may have failed.
+
+Email API
+I will develop the communication that replaces Green Hill’s need to write individual emails. The server will ask for the
+user’s permission to access their email inbox, and write and send reminder emails to each foster animal’s parent from
+the user’s account. Additionally, the server will do this simultaneously with asking to read the user’s Google calendar
+events. Secondly, I will receive and parse JSON data from the client-facing code that Amie writes. This data will contain
+all the reminders that Green Hill wants to send for the day, including the foster name, animal, medication, and most
+importantly email address. Implementing the Gmail API, I will send an email for each reminder that contains all the
+necessary information. Finally, I will send JSON data back to the client-facing code regarding which emails were
+successfully sent, so that Amie can display to the user what emails still need to be sent.
+
+Flask server, Gcal Authentication
+Our flask server will be running in a virtual environment for our dependencies to install into. It will handle the passing
+of data from the webpage to the google calendar API and the email API. When a user connects to the server we must
+get their Authentication to access their calendars.
+
+Steps
+1. Get 322 flask server running on localhost
+2. Trim old code
+3. Add logging functionality so that we can see how GH structures their calendars and events
+4. Test with GH
+5. Create stub pages for Amie to build off of while keeping core functionality.
+6. Create stub functions for jamie to plug her email code into.
+7. Use log files to parse calendar data and send as usable json data to the webpage.
+8. Integrate and test with person gmail accounts
+9. Send to GH for testing and feedback
+
+
