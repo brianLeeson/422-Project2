@@ -1,14 +1,10 @@
 import flask
-import json
-import urllib.request
 from flask import render_template
 from flask import request
-from flask import url_for
 from flask import jsonify
-import uuid
-
-import json
 import logging
+
+import ast
 
 # Date handling 
 import arrow  # Replacement for datetime, based on moment.js
@@ -113,33 +109,6 @@ def generate():
 
     return jsonify(allReminders)
 
-@app.route('/fakedata', methods=['GET','POST'])
-def fakedata():
-    """ Fake data for Amie to work with correctly formatted JSON objects..."""
-    animal_dict = {0: {"Foster Name": "John Smith", "Foster Email": "jsmith@email.com",
-                       "Animal Name(s)": "Fluffy Bunny", "Medication(s)": "Love, Hugs",
-                        "Notes": "blah blah blah blah"},
-                   1: {"Foster Name": "Brian Leeson", "Foster Email": "bleeson@email.com",
-                       "Animal Name(s)": "Oreo", "Medication(s)": "Milk",
-                        "Notes": "meow meow meow meow meow"},
-                   2: {"Foster Name": "Amie Corso", "Foster Email":"acorso@uoregon.edu",
-                       "Animal Name(s)": "Fatface, Marmot", "Medication(s)": "Diet Pills",
-                       "Notes": "Get one of those little cat leashes and walk these thugs"}
-                   }
-    return jsonify(animal_dict)
-
-@app.route('/testsendemails', methods=['GET','POST'])
-def testsendemails():
-    """ temporary route to explore form submission"""
-    #incoming_data = jsonify(request.get_json())
-    #incoming_data = request.args.get("thedata", type=str)
-    #str_response = response.readall().decode('utf-8')
-    #incoming_data = urllib.request.unquote(request.query_string)
-    incoming_data = request.args.to_dict()
-    print("Printing incoming data: ", incoming_data)
-
-    return jsonify("Something indicating success.")
-
 
 @app.route('/send_emails', methods=['GET','POST'])
 def send_emails():
@@ -150,26 +119,28 @@ def send_emails():
     return json object containing successful message if successful, failure message if not.
     """
     """
-    data will come from the client looking like this:
-    allReminders = {  
-        0 : {
-        Foster Name : "John Smith",
-        Foster Email : "jsmith@email.com",
-        Animal Name(s) : "Fluffy Bunny",
-        Medication(s) : "Love, Hugs",
-        Notes : "Please give a large dose twice a day until condition improves. Oh, and don't forget to email us back!"
-        }
-        1 : {
-        Foster Name : "blah",
-        Foster Email : "blah",
-        Animal Name(s) : "blah",
-        Medication(s) : "blah",
-        Notes : "blah"
-        }
-        and so on
+    I think the_dictionary =
+    {"reminders_to_email":
+            {"0":
+                {"Animal Name(s)":"Fluffy Bunny",
+                "Foster Email":"jsmith@email.com",
+                "Foster Name":"John Smith",
+                "Medication(s)":"Love, Hugs",
+                "Notes":"Please give a large dose twice a day until condition improves. Oh, and don\'t forget to email us back!"}
+            },
+            "unselected_reminders":{}
     }
     """
     #get the credentials
+    incoming_data = request.args.to_dict()
+    print("Printing incoming data: ", incoming_data[''])
+    the_dictionary = ast.literal_eval(incoming_data[''])
+    # print("THE DICTIONARY:", the_dictionary)
+
+    # in reality we'll want the return object to be a packet that contains the same data, and additional information
+    # about the emails. for example, it would be great to know if any failed or anything you can find out about emails.
+    # I dunno.
+
 
     credentials = valid_credentials()
     if not credentials:
@@ -197,6 +168,7 @@ def send_emails():
         results[entry['Foster Name']] = True;
     return jsonify(results)
     """
+    return jsonify("Something indicating success.")
 
 def telegram(service, userID, message):
     try:
@@ -356,7 +328,7 @@ def generateReminders(service):
 
     reminderDict = {}
     for cal in calendar_list:
-        if cal['id'] == REMINDER_ID:
+        # if cal['id'] == REMINDER_ID: # commented out to look through all calendars.
             events = service.events().list(calendarId=cal['id'], timeMin=timeMin,
                                            timeMax=timeMax, singleEvents=True).execute()['items']
             eventNum = 0

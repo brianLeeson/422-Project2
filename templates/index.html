@@ -11,22 +11,28 @@
         <!-- jquery from a content distribution network; probably cached -->
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 
-        <!--don't think we need below. testing required-->
-        <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+        <style>
 
-        <!--remove below after date range picker is removed.-->
-        <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
-        <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+        body {
+            background-color: #f2f2f2;
+            font-family: 'Verdana', sans-serif;
+        }
 
+
+        </style>
 
     </head>
 
     <body>
-        <div class="container">
+        <img src="http://www.green-hill.org/wp-content/uploads/2017/02/GH_logo_header_3.png" alt="Greenhill Logo" style="width:600px"/>
 
-            <h1>Data Checking</h1>
-            <p>This webpage will write the contents of your calender in the date range to a log file for us to read.</p>
-            <p>Please click the Button once and enter your credentials. Then you're done!</p>
+        <div class="container" style="text-align:center;">
+
+            <h2>Welcome to the Greenhill ReminderBot!</h2>
+            <p>This site will obtain and display the foster animal reminder information stored in the "Reminders" Google Calendar. <br>
+            Please click "Generate Log" once and enter the credentials for the Greenhill reminder calendar.<br>
+            This will generate a page that can be used to select and send reminder emails.<br>
+            Thanks! </p>
 
 
             <form action="/authenticate">
@@ -35,6 +41,7 @@
 
             <script>
             <!--inline js here if you like-->
+
             </script>
         </div>
     </body>
