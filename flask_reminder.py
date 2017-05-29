@@ -27,6 +27,11 @@ import admin_secrets  # Per-machine secrets
 
 import process_reminders as process
 
+# Email Object type & encoding mechanism
+from email.mime.text import MIMEText
+import base64
+import ast
+
 
 # Globals
 app = flask.Flask(__name__)
@@ -34,7 +39,7 @@ app.debug = CONFIG.DEBUG
 app.logger.setLevel(logging.DEBUG)
 app.secret_key = CONFIG.secret_key
 
-SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
+SCOPES = 'https://www.googleapis.com/auth/calendar.readonly https://mail.google.com/'
 CLIENT_SECRET_FILE = admin_secrets.google_key_file
 
 # ID of the calendar that stores all of the event reminders.
@@ -136,7 +141,7 @@ def testsendemails():
     return jsonify("Something indicating success.")
 
 
-@app.route('/send_emails')
+@app.route('/send_emails', methods=['GET','POST'])
 def send_emails():
     """
     This function will receive an ajax request from the server containing the data of who should be emailed.
@@ -164,9 +169,61 @@ def send_emails():
         and so on
     }
     """
+    #get the credentials
 
-    return jsonify("Something signifying success.")
+    credentials = valid_credentials()
+    if not credentials:
+        return None
+    # create a service object for the user's email
+    gmail_service = get_gmail_service(credentials)
+    print("got service object")
+    #get self - need to send all from the user that granted permission
+    sender_name = gmail_service.users().getProfile(userId="me").execute()['emailAddress']
+    check_marked = ast.literal_eval(list(request.args.to_dict().keys())[0])
+    print ("got this: {}\ntype is: {}, yay".format(check_marked, str(type(check_marked))))
 
+    # Results is a dictionary marking if emails were successfully sent - if an error occurred, mark false
+    text_reminder = "Hello {},\n Make sure to give {} to {} today:\n{}\nThank you,\nGreen Hill Humane Society".format("Brian", "Hugs", "Little Grey", "Yayyayy!")
+    msg = create_message(sender_name, "jamiez@uoregon.edu", "Daily Medicine Reminder", text_reminder)
+    # send out the email!
+    telegram(gmail_service, sender_name, msg)
+    """
+    results = dict()
+    for entry in check_marked:
+        text_reminder = "Hello {},\n Make sure to give {} to {} today:\n{}\nThank you,\nGreen Hill Humane Society".format(entry['Foster Name'], entry['Medication(s)'], entry['Animal Name(s)'], entry['Notes'])
+        msg = create_message(sender_name, entry['Foster Email'], "Daily Medicine Reminder", text_reminder)
+        # send out the email!
+        telegram(gmail_service, sender_name, msg)
+        results[entry['Foster Name']] = True;
+    return jsonify(results)
+    """
+
+def telegram(service, userID, message):
+    try:
+        message = (service.users().messages().send(userId=userID, body=message).execute())
+        print('Message Id: %s' % message['id'])
+        return message
+    except ():
+        print('An error occurred: %s' % 'error')
+    
+
+def create_message(sender, to, subject, message_text):
+    """Create a message for an email.
+
+      Args:
+        sender: Email address of the sender.
+        to: Email address of the receiver.
+        subject: The subject of the email message.
+        message_text: The text of the email message.
+
+      Returns:
+        An object containing a base64url encoded email object.
+    """
+    message = MIMEText(message_text)
+    message['to'] = to
+    message['from'] = sender
+    message['subject'] = subject
+    return {'raw': base64.urlsafe_b64encode(message.as_string().encode('utf-8')).decode('utf-8')}
 ####
 #
 #  Google calendar authorization:
@@ -230,6 +287,11 @@ def get_gcal_service(credentials):
     app.logger.debug("Returning service")
     return service
 
+def get_gmail_service(credentials):
+    http_auth = credentials.authorize(httplib2.Http())
+    service = discovery.build('gmail', 'v1', http=http_auth)
+    app.logger.debug("Returning service")
+    return service
 
 @app.route('/oauth2callback')
 def oauth2callback():
