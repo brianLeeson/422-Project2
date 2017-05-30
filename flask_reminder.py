@@ -68,7 +68,6 @@ def authenticate():
     if not credentials:  # not None is True. weird.
         app.logger.debug("Redirecting to authorization")
         return flask.redirect(flask.url_for('oauth2callback'))
-
     return render_template('success.html')
 
 
@@ -116,10 +115,13 @@ def send_emails():
     This function will receive an ajax request from the server containing the data of who should be emailed.
     Parse that data
     send email to fosters in that data.
-    return json object containing successful message if successful, failure message if not.
-    """
-    """
-    I think the_dictionary =
+    return json dictionary mimicking the input data.
+        'reminders_to_email' field contains the emails that WERE sent. 
+        'unselected_reminders' are emails that the user didn't select and still need to be displayed
+        'failed_send' are emails that were selected and attempted to send, but an error occurred.
+
+    INPUT->
+    the_dictionary =
     {"reminders_to_email":
             {"0":
                 {"Animal Name(s)":"Fluffy Bunny",
@@ -130,45 +132,62 @@ def send_emails():
             },
             "unselected_reminders":{}
     }
+
+    OUTPUT->
+    the_dictionary =
+    {"unselected_reminders":
+            {"0":
+                {"Animal Name(s)":"Fluffy Bunny",
+                "Foster Email":"jsmith@email.com",
+                "Foster Name":"John Smith",
+                "Medication(s)":"Love, Hugs",
+                "Notes":"Please give a large dose twice a day until condition improves. Oh, and don\'t forget to email us back!"}
+            },
+    "reminders_to_email":
+            {"0":
+                {"Animal Name(s)":"Bug",
+                "Foster Email":"yellow@yellow.com",
+                "Foster Name":"Amie Jamie",
+                "Medication(s)":"Long Walk",
+                "Notes":"Only take her favorite yellow leash."}
+            },},
+    "failed_send":{}
+    }
     """
-    #get the credentials
     incoming_data = request.args.to_dict()
-    print("Printing incoming data: ", incoming_data[''])
     the_dictionary = ast.literal_eval(incoming_data[''])
-    # print("THE DICTIONARY:", the_dictionary)
-
-    # in reality we'll want the return object to be a packet that contains the same data, and additional information
-    # about the emails. for example, it would be great to know if any failed or anything you can find out about emails.
-    # I dunno.
-
 
     credentials = valid_credentials()
     if not credentials:
         return None
     # create a service object for the user's email
     gmail_service = get_gmail_service(credentials)
-    print("got service object")
+    #print("got service object")
     #get self - need to send all from the user that granted permission
     sender_name = gmail_service.users().getProfile(userId="me").execute()['emailAddress']
-    check_marked = ast.literal_eval(list(request.args.to_dict().keys())[0])
-    print ("got this: {}\ntype is: {}, yay".format(check_marked, str(type(check_marked))))
+    
+    emails_to_send = the_dictionary['reminders_to_email'] # only the emails we need to send
+    the_keys = list(emails_to_send.keys()) # we don't know what the keys are (usually some stringified number, but they are unpredictable, and not in ascending order or reliably starting at 0)
+    failed = []
 
-    # Results is a dictionary marking if emails were successfully sent - if an error occurred, mark false
-    text_reminder = "Hello {},\n Make sure to give {} to {} today:\n{}\nThank you,\nGreen Hill Humane Society".format("Brian", "Hugs", "Little Grey", "Yayyayy!")
-    msg = create_message(sender_name, "jamiez@uoregon.edu", "Daily Medicine Reminder", text_reminder)
-    # send out the email!
-    telegram(gmail_service, sender_name, msg)
-    """
-    results = dict()
-    for entry in check_marked:
-        text_reminder = "Hello {},\n Make sure to give {} to {} today:\n{}\nThank you,\nGreen Hill Humane Society".format(entry['Foster Name'], entry['Medication(s)'], entry['Animal Name(s)'], entry['Notes'])
-        msg = create_message(sender_name, entry['Foster Email'], "Daily Medicine Reminder", text_reminder)
+    for entry in the_keys: #entry is itself a dictionary, mapping a stringified number to a event reminder data
+        stuff = emails_to_send[entry]
+        
+        text_reminder = "Hello {},\n\n Make sure to give {} to {} today:\n{}\n\nThank you,\nGreen Hill Humane Society".format(stuff['Foster Name'], stuff['Medication(s)'], stuff['Animal Name(s)'], stuff['Notes'])
+        msg = create_message(sender_name, stuff['Foster Email'], "Daily Medicine Reminder", text_reminder)
         # send out the email!
-        telegram(gmail_service, sender_name, msg)
-        results[entry['Foster Name']] = True;
-    return jsonify(results)
-    """
-    return jsonify("Something indicating success.")
+        did_it = telegram(gmail_service, sender_name, msg)
+        if not did_it:
+            failed.append(stuff)
+            print("***********the message failed to send ")
+    
+    failures = {}
+    for i in range(len(failed)):
+        failures[str(i)] = failed[i]
+    the_dictionary['failed_send'] = failures #add a new field to the original dictionary of the emails that failed
+    print(the_dictionary)
+    return jsonify(the_dictionary)
+
 
 def telegram(service, userID, message):
     try:
@@ -177,6 +196,7 @@ def telegram(service, userID, message):
         return message
     except ():
         print('An error occurred: %s' % 'error')
+        return None
     
 
 def create_message(sender, to, subject, message_text):
