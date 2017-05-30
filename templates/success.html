@@ -173,8 +173,9 @@ function processForm() {
     console.log("dataPacket: ", dataPacket);
     //$.getJSON( '/send_emails', dataPacket, function(e) {
     $.getJSON( '/send_emails', {"": dataPacket}, function(e) {
-
-    return false;}
+        });
+    return false;
+    }
 
     </script>
 </body>
