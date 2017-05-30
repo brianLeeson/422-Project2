@@ -67,9 +67,9 @@
     <h2 style="text-align:center">ReminderBot</h2><br>
 
     <div style="text-align: center">
-    <h6>Logging complete! Displaying reminders for </h6> <h6 id="date"></h6>
+    <h6>Displaying reminders for </h6> <h6 id="date"></h6>
 
-        <p> Select reminders to be sent to fosters.<br> When done selecting, click on "Preview Emails"</p>
+        <p> Review today's reminders and deselect any email to prevent it from sending.<br> Then click the button below to send selected emails.</p>
     </div>
     <div id="tablespace" class="container">
         <form onsubmit="processForm();">
@@ -85,7 +85,7 @@
 
             </table>
             <div id="buttonholder">
-                <input type="submit" id="previewemails" value="Preview Emails">
+                <input type="submit" id="previewemails" value="Send">
             </div>
         </form>
     </div>
@@ -138,7 +138,7 @@ $(document).ready(function() {
                 var rowRef = $("#row" + i );
                 rowRef.append('<td id="boxCell' + i + '" style="text-align:center; vertical-align:middle;"></td>');
                 var tdRef = $("#boxCell" + i);
-                tdRef.append('<input id="box' + i + '" type="checkbox" name="emailselect" value="' + i + '">');
+                tdRef.append('<input id="box' + i + '" type="checkbox" name="emailselect" value="' + i + '" checked>');
                 for (j = 0; j < fields.length; j++) {
                     rowRef.append('<td>' + reminders["" + i + ""][fields[j]] + '</td>' );
                 }
@@ -171,8 +171,9 @@ function processForm() {
 
     var dataPacket = JSON.stringify({"reminders_to_email" : reminders_to_email, "unselected_reminders" : unselected_reminders});
     console.log("dataPacket: ", dataPacket);
-    //$.getJSON( '/send_emails', dataPacket, function(e) {
     $.getJSON( '/send_emails', {"": dataPacket}, function(e) {
+        console.log("Returning from the send_emails route....");
+        console.log(e);
         });
     return false;
     }

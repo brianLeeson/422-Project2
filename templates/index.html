@@ -30,14 +30,24 @@
 
             <h2>Welcome to the Greenhill ReminderBot!</h2>
             <p>This site will obtain and display the foster animal reminder information stored in the "Reminders" Google Calendar. <br>
-            Please click "Sign In" once and enter the credentials for the Greenhill reminder calendar.<br>
+            Please click "Sign In" to enter the credentials for the Greenhill reminder calendar.<br>
             This will generate a page that can be used to select and send reminder emails.<br>
             Thanks! </p>
-
 
             <form action="/authenticate">
                 <input type="submit" value="Sign In" />
             </form>
+
+            <div style="text-align:left;">
+            <p><strong>Note: </strong> Each reminder's "description" field must match the following format exactly:
+                <br><br>
+            Foster Name: John Smith <br>
+            Foster Email: jsmith@example.com <br>
+            Animal Name(s): Felix The Cat <br>
+            Medication(s): Love, Hugs <br>
+            Notes: additional details go here <br>
+            </p>
+            </div>
 
             <script>
             <!--inline js here if you like-->
