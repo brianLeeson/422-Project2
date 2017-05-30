@@ -41,9 +41,6 @@ freeze:
 run:	env
 	($(INVENV) python3 flask_reminder.py) ||  true
 
-jamie:	env
-	($(INVENV) python3 jamie_server.py) ||  true
-
 # Run server in background. Be comfortable with killing processes to kill the server before running in background
 background: env
 	($(INVENV) python3 flask_reminder.py) &
