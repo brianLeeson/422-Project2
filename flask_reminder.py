@@ -170,7 +170,7 @@ def send_emails():
     the_keys = list(emails_to_send.keys()) # we don't know what the keys are (usually some stringified number, but they are unpredictable, and not in ascending order or reliably starting at 0)
     failed = []
 
-    for entry in the_keys: #entry is itself a dictionary, mapping a stringified number to a event reminder data
+    for entry in the_keys: #entry is itself a dictionary, mapping a stringified number to an event reminder data
         stuff = emails_to_send[entry]
         
         text_reminder = "Hello {},\n\n Make sure to give {} to {} today:\n{}\n\nThank you,\nGreen Hill Humane Society".format(stuff['Foster Name'], stuff['Medication(s)'], stuff['Animal Name(s)'], stuff['Notes'])

@@ -56,6 +56,53 @@
         margin: 10px;
     }
 
+    /* Loader style */
+    #loadingimage {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      z-index: 1;
+      width: 150px;
+      height: 150px;
+      margin: -75px 0 0 -75px;
+      border: 16px solid #f3f3f3;
+      border-radius: 50%;
+      border-top: 16px solid #3498db;
+      width: 120px;
+      height: 120px;
+      -webkit-animation: spin 2s linear infinite;
+      animation: spin 2s linear infinite;
+    }
+
+    @-webkit-keyframes spin {
+      0% { -webkit-transform: rotate(0deg); }
+      100% { -webkit-transform: rotate(360deg); }
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Add animation to "page content" */
+    .container {
+      position: relative;
+      -webkit-animation-name: animatebottom;
+      -webkit-animation-duration: 1s;
+      animation-name: animatebottom;
+      animation-duration: 1s
+    }
+
+    @-webkit-keyframes container {
+      from { bottom:-100px; opacity:0 }
+      to { bottom:0px; opacity:1 }
+    }
+
+    @keyframes container {
+      from{ bottom:-100px; opacity:0 }
+      to{ bottom:0; opacity:1 }
+    }
+
 
 </style>
 </head>
@@ -66,10 +113,12 @@
     <img src="https://lh5.ggpht.com/2q-Bmr3zH6Z3lN8wdDEtx4QVU6MUL88uyIRf_GQh-UKZO3yWintyHT2TBbfwnnndUME=w300" alt="robologo" style="width:100px;"/>
     <h2 style="text-align:center">ReminderBot</h2><br>
 
+    <div id="loadingimage"></div>
     <div style="text-align: center">
     <h6>Displaying reminders for </h6> <h6 id="date"></h6>
 
-        <p> Review today's reminders and deselect any email to prevent it from sending.<br> Then click the button below to send selected emails.</p>
+        <p id="instructions"> Review today's reminders and deselect any email to prevent it from sending.<br>
+            Then click the button below to send selected emails.</p>
     </div>
     <div id="tablespace" class="container">
         <form onsubmit="processForm();">
@@ -110,17 +159,28 @@ day = days[n.getDay()];
 document.getElementById("date").innerHTML = "<strong> " + day + ", " + m + "/" + d + "/" + y + "</strong>";
 
 var remindersGlobal = {};
+var returnedEmailData = {};
 
-function populateGlobal(aGlobal, JSON, JSONlength) {
+// Used to put JSON data from Google reminders calendar into a global object
+function populateRemindersGlobal(aGlobal, JSON, JSONlength) {
     for (var prop in JSON) {
         aGlobal[prop] = JSON[prop];
     }
     aGlobal["length"] = JSONlength;
 };
 
+// Used to put JSON data from returned Email feedback into a global object
+function populateReturnedEmail(returnedEmailData, JSON, JSONlength) {
+    for (var prop in JSON) {
+        returnedEmailData[prop] = JSON[prop];
+    }
+    returnedEmailData["length"] = JSONlength;
+};
+
 
 // AJAX request to '/generate' - get reminder calendar data
 $(document).ready(function() {
+    $('#loadingimage').show();
     $.ajax({
         url: "/generate",
         type: 'GET',
@@ -129,7 +189,7 @@ $(document).ready(function() {
             console.log("success", reminders);
             var count = Object.keys(reminders).length;
             console.log("count =", count);
-            populateGlobal(remindersGlobal, reminders, count);
+            populateRemindersGlobal(remindersGlobal, reminders, count);
 
             var fields = ["Foster Name", "Foster Email", "Animal Name(s)", "Medication(s)", "Notes"];
             var tableRef = $("#tabletime");
@@ -143,6 +203,7 @@ $(document).ready(function() {
                     rowRef.append('<td>' + reminders["" + i + ""][fields[j]] + '</td>' );
                 }
             }
+            $('#loadingimage').hide();
         }
     })
 });
@@ -170,13 +231,56 @@ function processForm() {
     console.log("unselected_reminders = ", unselected_reminders);
 
     var dataPacket = JSON.stringify({"reminders_to_email" : reminders_to_email, "unselected_reminders" : unselected_reminders});
-    console.log("dataPacket: ", dataPacket);
-    $.getJSON( '/send_emails', {"": dataPacket}, function(e) {
-        console.log("Returning from the send_emails route....");
-        console.log(e);
+    //console.log("dataPacket: ", dataPacket);
+
+
+    $.getJSON( '/send_emails', {"": dataPacket}, function(emailJSON){
+            var count = Object.keys(emailJSON).length;
+            populateReturnedEmail(returnedEmailData, emailJSON, count);
         });
+
+    renderFeedback(returnedEmailData);
+    // ends function processForm()
     return false;
     }
+
+function renderFeedback(returnedEmailData) {
+        console.log("in renderFeedback()");
+        document.getElementById("instructions").innerHTML = "";
+        document.getElementById("tablespace").innerHTML = "";
+        var newHTML = '<h6> Sent emails to the following fosters: </h6>\
+                                 <table id="senttable">\
+                                       <tr>\
+                                            <th id="fostername">Foster Name</th>\
+                                            <th id="fosteremail">Foster Email</th>\
+                                            <th id="animal">Animal Name(s)</th>\
+                                            <th id="meds">Medication Details</th>\
+                                            <th id="notes">Notes</th>\
+                                       </tr>\
+                                </table>\
+                                <h6> Send failures: </h6>\
+                                <table id="failtable">\
+                                    <tr>\
+                                        <th id="fostername2">Foster Name</th>\
+                                        <th id="fosteremail2">Foster Email</th>\
+                                        <th id="animal2">Animal Name(s)</th>\
+                                        <th id="meds2">Medication Details</th>\
+                                        <th id="notes2">Notes</th>\
+                                    </tr>\
+                                </table>\
+                                <h6> Unsent: </h6>\
+                                <table id="unsenttable">\
+                                     <tr>\
+                                        <th id="fostername3">Foster Name</th>\
+                                        <th id="fosteremail3">Foster Email</th>\
+                                        <th id="animal3">Animal Name(s)</th>\
+                                        <th id="meds3">Medication Details</th>\
+                                        <th id="notes3">Notes</th>\
+                                    </tr>\
+                                </table>';
+        $('#tablespace').html(newHTML);
+}
+
 
     </script>
 </body>
