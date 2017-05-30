@@ -45,7 +45,7 @@ app.logger.setLevel(logging.DEBUG)
 app.secret_key = CONFIG.secret_key
 
 #https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/gmail.send
-SCOPES = 'https://mail.google.com/'
+SCOPES = 'https://mail.google.com/ https://www.googleapis.com/auth/calendar.readonly'
 CLIENT_SECRET_FILE = admin_secrets.google_key_file
 APPLICATION_NAME = 'MeetMe class project'
 
@@ -86,7 +86,7 @@ def choose():
 
 
     sender_name = gmail_service.users().getProfile(userId="me").execute()['emailAddress']
-    msg = create_message(sender_name, "jamie.zimmerman4@gmail.com", "test GH", "Please give a large dose twice a day until condition improves. Oh, and don't forget to email us back!")
+    msg = create_message(sender_name, "bel@uoregon.edu", "test GH", "Brian, Please give a large dose twice a day until condition improves. Oh, and don't forget to email us back!")
     
     telegram(gmail_service, sender_name, msg)
     
@@ -98,6 +98,16 @@ def choose():
     #flask.g.calendars = list_calendars(gcal_service)
     return render_template('success.html')
 
+@app.route("/send_emails")
+def bulk_send():
+    """
+    Args: None
+    need to get check marked data from Amie's js
+    parse the jsonify-ed data,
+    iterate through it,
+    and for each one, create a message object and send it
+
+    """
 def telegram(service, userID, message):
     try:
         message = (service.users().messages().send(userId=userID, body=message).execute())
