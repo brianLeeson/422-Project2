@@ -180,11 +180,13 @@ def send_emails():
     for entry in the_keys:  # entry is itself a dictionary, mapping a stringified number to an event reminder data
         reminder = emails_to_send[entry]
 
-        email_string = "Hello {},\n\n Make sure to give {} to {} today:\n{}\n\nThank you,\nGreen Hill Humane Society"
         foster_name = reminder['Foster Name']
         medications = reminder['Medication(s)']
         animal_name = reminder['Animal Name(s)']
         notes = reminder['Notes']
+        email_string = "Hello {},\n\nMake sure to give {} to {} today:\n{}\nWhen you have given" + medications +  \
+                       ", or if you have any questions, please email use back.\n\nThank you,\nGreen Hill Humane Society"
+
         text_reminder = email_string.format(foster_name, medications, animal_name, notes)
 
         foster_email = reminder['Foster Email']
