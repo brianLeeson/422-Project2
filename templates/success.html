@@ -8,8 +8,6 @@
     <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/latest/css/bootstrap.css"/>
     <link rel="stylesheet" type="text/css" href="/static/css/reminder.css"/>
 
-    <!-- jquery from a content distribution network; probably cached -->
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 
     <!--don't think we need below. testing required-->
 
@@ -150,6 +148,8 @@
         </form>
     </div>
 
+ <!-- jquery from a content distribution network; probably cached -->
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 
     <script>
 
@@ -199,8 +199,9 @@ $(document).ready(function() {
             console.log("success", reminders);
             var count = Object.keys(reminders).length;
             console.log("count =", count);
-            populateRemindersGlobal(remindersGlobal, reminders, count);
-
+           // populateRemindersGlobal(remindersGlobal, reminders, count);
+            remindersGlobal = reminders;
+            remindersGlobal.length = count;
             var fields = ["Foster Name", "Foster Email", "Animal Name(s)", "Medication(s)", "Notes"];
             var tableRef = $("#tabletime");
             for (i = 0; i < count; i++) {
@@ -225,6 +226,7 @@ console.log("Outside AJAX function: ", remindersGlobal);
 
 // processes form information to send selected data for emailing
 function processForm() {
+    event.preventDefault();
     var reminders_to_email = {};
     var unselected_reminders = {};
     for (i = 0; i < remindersGlobal["length"]; i++) {
@@ -246,19 +248,18 @@ function processForm() {
     $.getJSON( '/send_emails', {"": dataPacket}).done(function(emailJSON){
             console.log("RIGHT when we get it back: ", emailJSON);
             populateReturnedEmail(returnedEmailData, emailJSON);
+            renderFeedback(returnedEmailData);
+
         });
 
     console.log("Outside getJSON... returnedEmailData: ? ", returnedEmailData);
 
-    setTimeout(function() {
-    renderFeedback(returnedEmailData);
     // ends function processForm()
-    }, 1000);
     return false;
     }
 
 function renderFeedback(returnedEmailData) {
-    setTimeout( function() {
+    //setTimeout( function() {
         console.log("in renderFeedback()");
         console.log("argument returnedEmailData: ", returnedEmailData);
         console.log("GIVE IT TO ME: ", returnedEmailData["reminders_to_email"]);
@@ -344,7 +345,7 @@ function renderFeedback(returnedEmailData) {
 
 
         return false;
-        }, 2000);
+        //}, 2000);
 } // end renderFeedback
 
 
