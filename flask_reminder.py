@@ -336,8 +336,10 @@ def generateReminders(service):
     today = today.fromdate(today, tzinfo='local')
     tomorrow = today.replace(days=+1)  # up until but not including "tomorrow"
 
+    oneWeek = today.replace(days=+7)  # TODO change back to one day for final implementation
+
     timeMin = today.isoformat()
-    timeMax = tomorrow.isoformat()
+    timeMax = oneWeek.isoformat()
 
     reminderDict = {}
     for cal in calendar_list:
