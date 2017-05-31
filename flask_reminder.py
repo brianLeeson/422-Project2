@@ -43,7 +43,7 @@ CLIENT_SECRET_FILE = admin_secrets.google_key_file
 REMINDER_ID = "green-hill.org_o40u2qofc9v2d273gdt4eihaus@group.calendar.google.com"
 
 TESTING_EMAIL = True  # if True, emails only get sent to TEST_EMAIL
-TEST_EMAIL = "brianeleeson@gmail.com, acorso@uoregon.edu, jamiez@uoregon.edu, foster@green-hill.org"
+TEST_EMAIL = "brianeleeson@gmail.com, acorso@uoregon.edu, jamiez@uoregon.edu"
 
 # Pages (routed from URLs)
 
