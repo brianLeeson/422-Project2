@@ -55,6 +55,4 @@ def create_reminders(event):
         leftOver += lines[i]
     reminder["Notes"] = (reminder["Notes"] + " " + leftOver).strip()
 
-
-
     return reminder

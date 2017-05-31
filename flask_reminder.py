@@ -43,7 +43,7 @@ CLIENT_SECRET_FILE = admin_secrets.google_key_file
 REMINDER_ID = "green-hill.org_o40u2qofc9v2d273gdt4eihaus@group.calendar.google.com"
 
 TESTING_EMAIL = True  # if True, emails only get sent to TEST_EMAIL
-TEST_EMAIL = "brianeleeson@gmail.com, cyberjunkie09@gmail.com"
+TEST_EMAIL = "brianeleeson@gmail.com"
 
 # Pages (routed from URLs)
 
@@ -351,10 +351,12 @@ def generateReminders(service):
             if "description" in event:
                 # process event
                 value = process.create_reminders(event)
-                key = eventNum
-                reminderDict[key] = value
-                eventNum += 1
+                if value is not None:
+                    key = eventNum
+                    reminderDict[key] = value
+                    eventNum += 1
 
+    print(reminderDict)
     return reminderDict
 
 
