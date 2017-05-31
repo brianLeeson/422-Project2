@@ -190,7 +190,7 @@ def send_emails():
         text_reminder = email_string.format(foster_name, medications, animal_name, notes)
 
         foster_email = reminder['Foster Email']
-        email_subject = "Daily Medicine Reminder"
+        email_subject = "Medicine Reminder"
 
         if TESTING_EMAIL:
             foster_email = TEST_EMAIL
