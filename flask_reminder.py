@@ -356,7 +356,6 @@ def generateReminders(service):
                     reminderDict[key] = value
                     eventNum += 1
 
-    print(reminderDict)
     return reminderDict
 
 
