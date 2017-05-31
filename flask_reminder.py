@@ -1,4 +1,5 @@
 import flask
+import json
 from flask import render_template
 from flask import request
 from flask import jsonify
@@ -186,7 +187,7 @@ def send_emails():
         failures[str(i)] = failed[i]
     the_dictionary['failed_send'] = failures #add a new field to the original dictionary of the emails that failed
     print(the_dictionary)
-    return jsonify(the_dictionary)
+    return json.dumps(the_dictionary)
 
 
 def telegram(service, userID, message):

@@ -28,10 +28,20 @@
     table {
         margin-left: auto;
         margin-right: auto;
+        margin: 20px;
     }
 
-    tr:hover td {
+    #tabletime tr:hover td {
         background-color: #b3ffb3;
+    }
+
+
+    .fail {
+        background-color: #ffd6cc;
+    }
+
+    .unsent {
+        background-color: #ffffb3;
     }
 
     th, td {
@@ -55,6 +65,7 @@
         text-align: center;
         margin: 10px;
     }
+
 
     /* Loader style */
     #loadingimage {
@@ -170,11 +181,10 @@ function populateRemindersGlobal(aGlobal, JSON, JSONlength) {
 };
 
 // Used to put JSON data from returned Email feedback into a global object
-function populateReturnedEmail(returnedEmailData, JSON, JSONlength) {
+function populateReturnedEmail(returnedEmailData, JSON) {
     for (var prop in JSON) {
         returnedEmailData[prop] = JSON[prop];
     }
-    returnedEmailData["length"] = JSONlength;
 };
 
 
@@ -233,53 +243,109 @@ function processForm() {
     var dataPacket = JSON.stringify({"reminders_to_email" : reminders_to_email, "unselected_reminders" : unselected_reminders});
     //console.log("dataPacket: ", dataPacket);
 
-
-    $.getJSON( '/send_emails', {"": dataPacket}, function(emailJSON){
-            var count = Object.keys(emailJSON).length;
-            populateReturnedEmail(returnedEmailData, emailJSON, count);
+    $.getJSON( '/send_emails', {"": dataPacket}).done(function(emailJSON){
+            console.log("RIGHT when we get it back: ", emailJSON);
+            populateReturnedEmail(returnedEmailData, emailJSON);
         });
 
+    console.log("Outside getJSON... returnedEmailData: ? ", returnedEmailData);
+
+    setTimeout(function() {
     renderFeedback(returnedEmailData);
     // ends function processForm()
+    }, 1000);
     return false;
     }
 
 function renderFeedback(returnedEmailData) {
+    setTimeout( function() {
         console.log("in renderFeedback()");
+        console.log("argument returnedEmailData: ", returnedEmailData);
+        console.log("GIVE IT TO ME: ", returnedEmailData["reminders_to_email"]);
+
+
         document.getElementById("instructions").innerHTML = "";
         document.getElementById("tablespace").innerHTML = "";
         var newHTML = '<h6> Sent emails to the following fosters: </h6>\
-                                 <table id="senttable">\
+                                 <table id="senttable" class="sent" style="width:95%;border: 1px solid black; float:center;">\
                                        <tr>\
-                                            <th id="fostername">Foster Name</th>\
-                                            <th id="fosteremail">Foster Email</th>\
-                                            <th id="animal">Animal Name(s)</th>\
-                                            <th id="meds">Medication Details</th>\
-                                            <th id="notes">Notes</th>\
+                                            <th id="fostername" class="sent" >Foster Name</th>\
+                                            <th id="fosteremail" class="sent" >Foster Email</th>\
+                                            <th id="animal" class="sent" >Animal Name(s)</th>\
+                                            <th id="meds" class="sent" >Medication Details</th>\
+                                            <th id="notes" class="sent" >Notes</th>\
                                        </tr>\
                                 </table>\
                                 <h6> Send failures: </h6>\
-                                <table id="failtable">\
+                                <table id="failtable" class="fail" style="width:95%;border: 1px solid black; float:center;">\
                                     <tr>\
-                                        <th id="fostername2">Foster Name</th>\
-                                        <th id="fosteremail2">Foster Email</th>\
-                                        <th id="animal2">Animal Name(s)</th>\
-                                        <th id="meds2">Medication Details</th>\
-                                        <th id="notes2">Notes</th>\
+                                        <th id="fostername2" class="fail">Foster Name</th>\
+                                        <th id="fosteremail2" class="fail">Foster Email</th>\
+                                        <th id="animal2" class="fail">Animal Name(s)</th>\
+                                        <th id="meds2" class="fail">Medication Details</th>\
+                                        <th id="notes2" class="fail">Notes</th>\
                                     </tr>\
                                 </table>\
                                 <h6> Unsent: </h6>\
-                                <table id="unsenttable">\
+                                <table id="unsenttable" class="unsent" style="width:95%;border: 1px solid black; float:center;">\
                                      <tr>\
-                                        <th id="fostername3">Foster Name</th>\
-                                        <th id="fosteremail3">Foster Email</th>\
-                                        <th id="animal3">Animal Name(s)</th>\
-                                        <th id="meds3">Medication Details</th>\
-                                        <th id="notes3">Notes</th>\
+                                        <th id="fostername3" class="unsent" >Foster Name</th>\
+                                        <th id="fosteremail3" class="unsent" >Foster Email</th>\
+                                        <th id="animal3" class="unsent" >Animal Name(s)</th>\
+                                        <th id="meds3" class="unsent" >Medication Details</th>\
+                                        <th id="notes3" class="unsent" >Notes</th>\
                                     </tr>\
                                 </table>';
         $('#tablespace').html(newHTML);
-}
+
+        var fields = ["Foster Name", "Foster Email", "Animal Name(s)", "Medication(s)", "Notes"];
+
+        var sent_obj = returnedEmailData["reminders_to_email"];
+        console.log("sent_obj : ", sent_obj);
+        var failed_obj = returnedEmailData["failed_send"];
+        var unselected_obj = returnedEmailData["unselected_reminders"];
+
+        var tableRef = $("#senttable");
+        var count = 0;
+        for (var prop in sent_obj) {
+            tableRef.append("<tr id=newrow" + prop + ">" + "</tr>");
+            var rowRef = $("#newrow" + prop );
+
+            for (j = 0; j < fields.length; j++) {
+                rowRef.append("<td class='sent' >" + sent_obj[prop][fields[j]] + "</td>" );
+            }
+        }
+
+        var tableRef2 = $("#failtable");
+        var count = 0;
+        for (var prop in failed_obj) {
+            tableRef2.append("<tr id=newrow" + prop + ">" + "</tr>");
+            var rowRef = $("#newrow" + prop );
+
+            for (j = 0; j < fields.length; j++) {
+                rowRef.append("<td class='fail' >" + failed_obj[prop][fields[j]] + "</td>" );
+            }
+        }
+
+        var tableRef3 = $("#unsenttable");
+        var count = 0;
+        for (var prop in unselected_obj) {
+            tableRef3.append("<tr id=newrow" + prop + ">" + "</tr>");
+            var rowRef = $("#newrow" + prop );
+
+            for (j = 0; j < fields.length; j++) {
+                rowRef.append("<td class='unsent' >" + unselected_obj[prop][fields[j]] + "</td>" );
+            }
+        }
+
+
+
+
+
+
+        return false;
+        }, 2000);
+} // end renderFeedback
 
 
     </script>
