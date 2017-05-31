@@ -43,7 +43,7 @@ CLIENT_SECRET_FILE = admin_secrets.google_key_file
 REMINDER_ID = "green-hill.org_o40u2qofc9v2d273gdt4eihaus@group.calendar.google.com"
 
 TESTING_EMAIL = True  # if True, emails only get sent to TEST_EMAIL
-TEST_EMAIL = "brianeleeson@gmail.com"
+TEST_EMAIL = "brianeleeson@gmail.com, cyberjunkie09@gmail.com"
 
 # Pages (routed from URLs)
 
@@ -184,8 +184,8 @@ def send_emails():
         medications = reminder['Medication(s)']
         animal_name = reminder['Animal Name(s)']
         notes = reminder['Notes']
-        email_string = "Hello {},\n\nMake sure to give {} to {} today:\n{}\nWhen you have given" + medications +  \
-                       ", or if you have any questions, please email use back.\n\nThank you,\nGreen Hill Humane Society"
+        email_string = "Hello {},\n\nMake sure to give {} to {} today.\nNotes: {}\n\nWhen you have given: " + medications +  \
+                       ", or if you have any questions, please email use back.\nThank you,\nGreen Hill Humane Society"
 
         text_reminder = email_string.format(foster_name, medications, animal_name, notes)
 
