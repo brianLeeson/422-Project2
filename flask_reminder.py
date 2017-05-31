@@ -351,10 +351,12 @@ def generateReminders(service):
             if "description" in event:
                 # process event
                 value = process.create_reminders(event)
-                key = eventNum
-                reminderDict[key] = value
-                eventNum += 1
+                if value is not None:
+                    key = eventNum
+                    reminderDict[key] = value
+                    eventNum += 1
 
+    print(reminderDict)
     return reminderDict
 
 
