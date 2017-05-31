@@ -42,7 +42,7 @@ CLIENT_SECRET_FILE = admin_secrets.google_key_file
 # ID of the calendar that stores all of the event reminders.
 REMINDER_ID = "green-hill.org_o40u2qofc9v2d273gdt4eihaus@group.calendar.google.com"
 
-TESTING_EMAIL = True  # if True, emails only get sent to TEST_EMAIL
+TESTING_EMAIL = False; # if True, emails only get sent to TEST_EMAIL
 TEST_EMAIL = "brianeleeson@gmail.com, acorso@uoregon.edu, jamiez@uoregon.edu, foster@green-hill.org"
 
 # Pages (routed from URLs)
@@ -185,7 +185,7 @@ def send_emails():
         animal_name = reminder['Animal Name(s)']
         notes = reminder['Notes']
         email_string = "Hello {},\n\nMake sure to give {} to {} today.\nNotes: {}\n\nWhen you have given: " + medications +  \
-                       ", or if you have any questions, please email use back.\nThank you,\nGreen Hill Humane Society"
+                       ", or if you have any questions, please email us back.\nThank you,\nGreen Hill Humane Society"
 
         text_reminder = email_string.format(foster_name, medications, animal_name, notes)
 
@@ -234,6 +234,7 @@ def create_message(sender, to, subject, message_text):
     message['to'] = to
     message['from'] = sender
     message['subject'] = subject
+    message['reply-to'] = "foster@green-hill.org"
     return {'raw': base64.urlsafe_b64encode(message.as_string().encode('utf-8')).decode('utf-8')}
 
 
