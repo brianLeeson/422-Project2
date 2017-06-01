@@ -28,8 +28,8 @@ make
 ### Instructions:
 Note: This project has bee built to run in one place (ix) and on a specific port number. It will only work when
 running in that way or on localhost. Once running on localhost, one must have events in the google calendar that they 
-are using to sign in with. In those events the description field must be filled out with a specific format. An example 
-can be found on the homepage and in Documentation/standard_templates.
+are using to sign in with. The events and be named anything and start at anytime. In those events the description field 
+must be filled out with a specific format. An example can be found on the homepage and in Documentation/standard_templates.
   
 Setup:
  * Make sure all critical dependencies are installed.
@@ -46,6 +46,9 @@ person to connect per day, concurrency is not an immediate concern.
 
 Security is a concern. We will be moving to a https hosting site like Heroku over the summer after the next stages of
 development are known.
+
+The foster department could send more than one round of emails in a day. Should set it so that only one round can be 
+send per day. Or maybe one foster family per day.
 
 ### Platforms:
 This flask server is built to run on our schools ix server. 

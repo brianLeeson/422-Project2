@@ -5,8 +5,6 @@ from flask import request
 from flask import jsonify
 import logging
 
-import ast
-
 # Date handling 
 import arrow  # Replacement for datetime, based on moment.js
 
@@ -18,17 +16,20 @@ import httplib2  # used in oauth2 flow
 from apiclient import discovery
 
 import sys
+
 sys.path.insert(0, "./secrets/")
 import CONFIG
 import admin_secrets  # Per-machine secrets
 
+# Developer modules
 import process_reminders as process
+
+import usage_logging as ul
 
 # Email Object type & encoding mechanism
 from email.mime.text import MIMEText
 import base64
 import ast
-
 
 # Globals
 app = flask.Flask(__name__)
@@ -38,6 +39,11 @@ app.secret_key = CONFIG.secret_key
 
 SCOPES = 'https://www.googleapis.com/auth/calendar.readonly https://mail.google.com/'
 CLIENT_SECRET_FILE = admin_secrets.google_key_file
+
+TESTING_EMAIL = True  # if True, emails only get sent to TEST_EMAIL
+TEST_EMAIL = "brianeleeson@gmail.com, acorso@uoregon.edu, jamiez@uoregon.edu, foster@green-hill.org"
+
+USAGE_LOGGING = True
 
 # ID of the calendar that stores all of the event reminders.
 REMINDER_ID = "green-hill.org_o40u2qofc9v2d273gdt4eihaus@group.calendar.google.com"
@@ -77,18 +83,9 @@ def generate():
     """
     This function gets all reminder event for today and returns them as a json object
     This function assumes that valid credentials have already been obtained.
-    """
-    app.logger.debug("Generating reminders")
-    credentials = valid_credentials()
-    if not credentials:
-        return None
 
-    gcal_service = get_gcal_service(credentials)
-
-    allReminders = generateReminders(gcal_service)
-    """
     allReminders should look like
-    allReminders = {  
+    allReminders = {
         0 : {
         Foster Name : "John Smith",
         Foster Email : "jsmith@email.com",
@@ -106,11 +103,21 @@ def generate():
         ...and so on
     }
     """
+    app.logger.debug("Generating reminders")
+    credentials = valid_credentials()
+    if not credentials:
+        return None
 
+    gcal_service = get_gcal_service(credentials)
+
+    allReminders = generateReminders(gcal_service)
+
+    string = "Someone authenticated."
+    ul.write_to_log(USAGE_LOGGING, string)
     return jsonify(allReminders)
 
 
-@app.route('/send_emails', methods=['GET','POST'])
+@app.route('/send_emails', methods=['GET', 'POST'])
 def send_emails():
     """
     This function will receive an ajax request from the server containing the data of who should be emailed.
@@ -163,42 +170,57 @@ def send_emails():
         return None
     # create a service object for the user's email
     gmail_service = get_gmail_service(credentials)
-    #print("got service object")
-    #get self - need to send all from the user that granted permission
+
+    # get self - need to send all from the user that granted permission
     sender_name = gmail_service.users().getProfile(userId="me").execute()['emailAddress']
-    
-    emails_to_send = the_dictionary['reminders_to_email'] # only the emails we need to send
-    the_keys = list(emails_to_send.keys()) # we don't know what the keys are (usually some stringified number, but they are unpredictable, and not in ascending order or reliably starting at 0)
+
+    emails_to_send = the_dictionary['reminders_to_email']  # only the emails we need to send
+
+    # we don't know what the keys are (usually some stringified number, but they are unpredictable,
+    # and not in ascending order or reliably starting at 0)
+    the_keys = list(emails_to_send.keys())  # TODO getting list of keys not needed. can iterate over dict directly
     failed = []
 
-    for entry in the_keys: #entry is itself a dictionary, mapping a stringified number to an event reminder data
-        stuff = emails_to_send[entry]
-        
-        text_reminder = "Hello {},\n\n Make sure to give {} to {} today:\n{}\n\nThank you,\nGreen Hill Humane Society".format(stuff['Foster Name'], stuff['Medication(s)'], stuff['Animal Name(s)'], stuff['Notes'])
-        msg = create_message(sender_name, stuff['Foster Email'], "Daily Medicine Reminder", text_reminder)
+    for entry in the_keys:  # entry is itself a dictionary, mapping a stringified number to an event reminder data
+        reminder = emails_to_send[entry]
+
+        foster_name = reminder['Foster Name']
+        medications = reminder['Medication(s)']
+        animal_name = reminder['Animal Name(s)']
+        notes = reminder['Notes']
+        email_string = "Hello {},\n\nMake sure to give {} to {} today.\nNotes: {}\n\nWhen you have given: " + medications +  \
+                       "\nIf you have any questions, please email us back.\nThank you,\nGreenHill Humane Society"
+
+        text_reminder = email_string.format(foster_name, medications, animal_name, notes)
+
+        foster_email = reminder['Foster Email']
+        email_subject = "Medicine Reminder"
+
+        if TESTING_EMAIL:
+            foster_email = TEST_EMAIL
+
+        msg = create_message(sender_name, foster_email, email_subject, text_reminder)
+
         # send out the email!
-        did_it = telegram(gmail_service, sender_name, msg)
-        if not did_it:
-            failed.append(stuff)
-            print("***********the message failed to send ")
-    
+        sent = telegram(gmail_service, sender_name, msg)
+        if not sent:
+            failed.append(reminder)
+
     failures = {}
     for i in range(len(failed)):
         failures[str(i)] = failed[i]
-    the_dictionary['failed_send'] = failures #add a new field to the original dictionary of the emails that failed
-    print(the_dictionary)
+    the_dictionary['failed_send'] = failures  # add a new field to the original dictionary of the emails that failed
+
     return json.dumps(the_dictionary)
 
 
 def telegram(service, userID, message):
     try:
         message = (service.users().messages().send(userId=userID, body=message).execute())
-        print('Message Id: %s' % message['id'])
         return message
     except ():
-        print('An error occurred: %s' % 'error')
         return None
-    
+
 
 def create_message(sender, to, subject, message_text):
     """Create a message for an email.
@@ -217,34 +239,6 @@ def create_message(sender, to, subject, message_text):
     message['from'] = sender
     message['subject'] = subject
     return {'raw': base64.urlsafe_b64encode(message.as_string().encode('utf-8')).decode('utf-8')}
-####
-#
-#  Google calendar authorization:
-#      Returns us to the main /choose screen after inserting
-#      the calendar_service object in the session state.  May
-#      redirect to OAuth server first, and may take multiple
-#      trips through the oauth2 callback function.
-#
-#  Protocol for use ON EACH REQUEST: 
-#     First, check for valid credentials
-#     If we don't have valid credentials
-#         Get credentials (jump to the oauth2 protocol)
-#         (redirects back to /choose, this time with credentials)
-#     If we do have valid credentials
-#         Get the service object
-#
-#  The final result of successful authorization is a 'service'
-#  object.  We use a 'service' object to actually retrieve data
-#  from the Google services. Service objects are NOT serializable ---
-#  we can't stash one in a cookie.  Instead, on each request we
-#  get a fresh service object from our credentials, which are
-#  serializable. 
-#
-#  Note that after authorization we always redirect to /choose;
-#  If this is unsatisfactory, we'll need a session variable to use
-#  as a 'continuation' or 'return address' to use instead. 
-#
-####
 
 
 def valid_credentials():
@@ -280,11 +274,13 @@ def get_gcal_service(credentials):
     app.logger.debug("Returning service")
     return service
 
+
 def get_gmail_service(credentials):
     http_auth = credentials.authorize(httplib2.Http())
     service = discovery.build('gmail', 'v1', http=http_auth)
     app.logger.debug("Returning service")
     return service
+
 
 @app.route('/oauth2callback')
 def oauth2callback():
@@ -328,7 +324,7 @@ def oauth2callback():
         return flask.redirect(flask.url_for('authenticate'))
 
 
-#  Functions (NOT pages) that return some information
+# Functions (NOT pages) that return some information
 
 def generateReminders(service):
     """
@@ -338,25 +334,28 @@ def generateReminders(service):
 
     app.logger.debug("Entering generateReminders")
     # get all calendars on gmail account.
-    calendar_list = service.calendarList().list().execute()["items"]  # TODO: understand this api request
+    calendar_list = service.calendarList().list().execute()["items"]  # TODO: understand this api request. only query needed?
 
     today = arrow.now('local')
     today = today.fromdate(today, tzinfo='local')
     tomorrow = today.replace(days=+1)  # up until but not including "tomorrow"
 
+    oneWeek = today.replace(days=+7)  # TODO change back to one day for final implementation
+
     timeMin = today.isoformat()
-    timeMax = tomorrow.isoformat()
+    timeMax = oneWeek.isoformat()
 
     reminderDict = {}
     for cal in calendar_list:
         # if cal['id'] == REMINDER_ID: # commented out to look through all calendars.
-            events = service.events().list(calendarId=cal['id'], timeMin=timeMin,
-                                           timeMax=timeMax, singleEvents=True).execute()['items']
-            eventNum = 0
-            for event in events:
-                if "description" in event:
-                    # process event
-                    value = process.create_reminders(event)
+        events = service.events().list(calendarId=cal['id'], timeMin=timeMin,
+                                       timeMax=timeMax, singleEvents=True).execute()['items']
+        eventNum = 0
+        for event in events:
+            if "description" in event:
+                # process event
+                value = process.create_reminders(event)
+                if value is not None:
                     key = eventNum
                     reminderDict[key] = value
                     eventNum += 1
