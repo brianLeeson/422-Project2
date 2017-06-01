@@ -57,7 +57,9 @@ Ubuntu 16.04: runs
 Mac OSX: runs
 Window7: Does not run. 'make' not included by default. Could run with additional dependencies.
 
-### Details:
+### TESTING TOOLS:
+A test target is provided in the Makefile that tests the correctness of some processing functions. Additionally there
+are globals in flask_reminder.py in the globals section that allow the enabling and disabling of functionality. 
 
 ### Ideas for Project Improvement:
 This project is set up for Greenhill specifically and would need to be changed for other users
