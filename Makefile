@@ -57,7 +57,8 @@ service:	env
 # Run test suite. 
 # Nosetest will run all files of the form test_*.py
 
-# TODO: implement nosetests?
+# Will run all functions in all test_*.py files.
+# Intended to test data processing functions
 test:	env
 	$(INVENV) nosetests
 

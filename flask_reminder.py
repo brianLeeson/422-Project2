@@ -5,8 +5,6 @@ from flask import request
 from flask import jsonify
 import logging
 
-import ast
-
 # Date handling 
 import arrow  # Replacement for datetime, based on moment.js
 
@@ -23,7 +21,10 @@ sys.path.insert(0, "./secrets/")
 import CONFIG
 import admin_secrets  # Per-machine secrets
 
+# Developer modules
 import process_reminders as process
+
+import usage_logging as ul
 
 # Email Object type & encoding mechanism
 from email.mime.text import MIMEText
@@ -40,11 +41,20 @@ app.secret_key = CONFIG.secret_key
 SCOPES = 'https://www.googleapis.com/auth/calendar.readonly https://mail.google.com/'
 CLIENT_SECRET_FILE = admin_secrets.google_key_file
 
+<<<<<<< HEAD
 # ID of the calendar that stores all of the event reminders.
 REMINDER_ID = "green-hill.org_o40u2qofc9v2d273gdt4eihaus@group.calendar.google.com"
 
 TESTING_EMAIL = False; # if True, emails only get sent to TEST_EMAIL
+=======
+TESTING_EMAIL = True  # if True, emails only get sent to TEST_EMAIL
+>>>>>>> 986f5a1415ea78b5adffb24852a2d773b06dd034
 TEST_EMAIL = "brianeleeson@gmail.com, acorso@uoregon.edu, jamiez@uoregon.edu, foster@green-hill.org"
+
+USAGE_LOGGING = True
+
+# ID of the calendar that stores all of the event reminders.
+REMINDER_ID = "green-hill.org_o40u2qofc9v2d273gdt4eihaus@group.calendar.google.com"
 
 # Pages (routed from URLs)
 
@@ -81,18 +91,9 @@ def generate():
     """
     This function gets all reminder event for today and returns them as a json object
     This function assumes that valid credentials have already been obtained.
-    """
-    app.logger.debug("Generating reminders")
-    credentials = valid_credentials()
-    if not credentials:
-        return None
 
-    gcal_service = get_gcal_service(credentials)
-
-    allReminders = generateReminders(gcal_service)
-    """
     allReminders should look like
-    allReminders = {  
+    allReminders = {
         0 : {
         Foster Name : "John Smith",
         Foster Email : "jsmith@email.com",
@@ -110,7 +111,17 @@ def generate():
         ...and so on
     }
     """
+    app.logger.debug("Generating reminders")
+    credentials = valid_credentials()
+    if not credentials:
+        return None
 
+    gcal_service = get_gcal_service(credentials)
+
+    allReminders = generateReminders(gcal_service)
+
+    string = "Someone authenticated."
+    ul.write_to_log(USAGE_LOGGING, string)
     return jsonify(allReminders)
 
 
@@ -175,11 +186,10 @@ def send_emails():
 
     # we don't know what the keys are (usually some stringified number, but they are unpredictable,
     # and not in ascending order or reliably starting at 0)
-    the_keys = list(emails_to_send.keys())  # TODO getting list of keys not needed. can iterate over dict directly
     failed = []
 
-    for entry in the_keys:  # entry is itself a dictionary, mapping a stringified number to an event reminder data
-        reminder = emails_to_send[entry]
+    for key in emails_to_send:  # entry is itself a dictionary, mapping a stringified number to an event reminder data
+        reminder = emails_to_send[key]
 
         #Get all information locally
         foster_name = reminder['Foster Name']
@@ -194,7 +204,6 @@ def send_emails():
         text_reminder = email_string.format(foster_name, medications, animal_name, notes)
 
         # //// Need to see that the email is valid //////// #
-
 
         if TESTING_EMAIL:
             foster_email = TEST_EMAIL
