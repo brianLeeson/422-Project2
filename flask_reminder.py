@@ -29,6 +29,7 @@ import process_reminders as process
 from email.mime.text import MIMEText
 import base64
 import ast
+import validate_email
 
 # Globals
 app = flask.Flask(__name__)
@@ -180,17 +181,20 @@ def send_emails():
     for entry in the_keys:  # entry is itself a dictionary, mapping a stringified number to an event reminder data
         reminder = emails_to_send[entry]
 
+        #Get all information locally
         foster_name = reminder['Foster Name']
         medications = reminder['Medication(s)']
         animal_name = reminder['Animal Name(s)']
         notes = reminder['Notes']
-        email_string = "Hello {},\n\nMake sure to give {} to {} today.\nNotes: {}\n\nWhen you have given: " + medications +  \
-                       ", or if you have any questions, please email us back.\nThank you,\nGreen Hill Humane Society"
-
-        text_reminder = email_string.format(foster_name, medications, animal_name, notes)
-
         foster_email = reminder['Foster Email']
         email_subject = "Daily Medicine Reminder"
+        #Generic Email message
+        email_string = "Hello {},\n\nMake sure to give {} to {} today.\nNotes: {}\n\nWhen you have given: " + medications +  \
+                       ", or if you have any questions, please email us back.\nThank you,\nGreen Hill Humane Society"
+        text_reminder = email_string.format(foster_name, medications, animal_name, notes)
+
+        # //// Need to see that the email is valid //////// #
+
 
         if TESTING_EMAIL:
             foster_email = TEST_EMAIL
@@ -234,7 +238,7 @@ def create_message(sender, to, subject, message_text):
     message['to'] = to
     message['from'] = sender
     message['subject'] = subject
-    message['reply-to'] = "foster@green-hill.org"
+    message['reply-to'] = "foster@green-hill.org" #This can be hardcoded - only GH will ever use this product
     return {'raw': base64.urlsafe_b64encode(message.as_string().encode('utf-8')).decode('utf-8')}
 
 
