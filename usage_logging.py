@@ -19,12 +19,14 @@ def write_to_log(isLogging, logString, valueDict={}):
     ISOTIME: Hello World!
     above will be written to './log/DATE'
     """
+    date_format = "YYYY-MM-DD"
+    log_folder_path = "./log/"
     if isLogging:
         now = arrow.now('local')
-        date = now.format('DD-MM-YYYY')
-        with open('./log/' + date, 'a') as f:
+        today = now.format(date_format)
+        with open(log_folder_path + today, 'a') as f:
             log = logString.format(**valueDict)
-            f.write(now.format("DD-MM-YYYY, HH:mm") + ": " + log + "\n")
+            f.write(now.format(date_format + ", HH:mm") + ": " + log + "\n")
 
     return None
 
