@@ -52,9 +52,6 @@ TEST_EMAIL = "brianeleeson@gmail.com, acorso@uoregon.edu, jamiez@uoregon.edu, fo
 
 USAGE_LOGGING = True
 
-# ID of the calendar that stores all of the event reminders.
-REMINDER_ID = "green-hill.org_o40u2qofc9v2d273gdt4eihaus@group.calendar.google.com"
-
 # Pages (routed from URLs)
 
 
