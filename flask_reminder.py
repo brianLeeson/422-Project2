@@ -83,18 +83,9 @@ def generate():
     """
     This function gets all reminder event for today and returns them as a json object
     This function assumes that valid credentials have already been obtained.
-    """
-    app.logger.debug("Generating reminders")
-    credentials = valid_credentials()
-    if not credentials:
-        return None
 
-    gcal_service = get_gcal_service(credentials)
-
-    allReminders = generateReminders(gcal_service)
-    """
     allReminders should look like
-    allReminders = {  
+    allReminders = {
         0 : {
         Foster Name : "John Smith",
         Foster Email : "jsmith@email.com",
@@ -112,6 +103,15 @@ def generate():
         ...and so on
     }
     """
+    app.logger.debug("Generating reminders")
+    credentials = valid_credentials()
+    if not credentials:
+        return None
+
+    gcal_service = get_gcal_service(credentials)
+
+    allReminders = generateReminders(gcal_service)
+
     string = "Someone authenticated."
     ul.write_to_log(USAGE_LOGGING, string)
     return jsonify(allReminders)
@@ -189,7 +189,7 @@ def send_emails():
         animal_name = reminder['Animal Name(s)']
         notes = reminder['Notes']
         email_string = "Hello {},\n\nMake sure to give {} to {} today.\nNotes: {}\n\nWhen you have given: " + medications +  \
-                       ", or if you have any questions, please email use back.\nThank you,\nGreen Hill Humane Society"
+                       "\nIf you have any questions, please email us back.\nThank you,\nGreenHill Humane Society"
 
         text_reminder = email_string.format(foster_name, medications, animal_name, notes)
 
