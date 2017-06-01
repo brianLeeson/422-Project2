@@ -19,6 +19,14 @@
 
     }
 
+    #emailtemplate {
+        background-color: #ffffff;
+        width: 800px;
+        border: 3px solid black;
+        padding: 20px;
+        margin: auto;
+    }
+
     table, th, td {
         border: 2px solid black;
         background-color:  #ccffcc;
@@ -71,14 +79,14 @@
       left: 50%;
       top: 50%;
       z-index: 1;
-      width: 150px;
-      height: 150px;
-      margin: -75px 0 0 -75px;
-      border: 16px solid #f3f3f3;
-      border-radius: 50%;
-      border-top: 16px solid #3498db;
       width: 120px;
       height: 120px;
+      margin: -75px 0 0 -75px;
+      border: 16px solid #ffffff;
+      border-radius: 50%;
+      border-top: 16px solid #668cff;
+      width: 100px;
+      height: 100px;
       -webkit-animation: spin 2s linear infinite;
       animation: spin 2s linear infinite;
     }
@@ -103,12 +111,12 @@
     }
 
     @-webkit-keyframes container {
-      from { bottom:-100px; opacity:0 }
+      from { bottom:-100px; opacity:100 }
       to { bottom:0px; opacity:1 }
     }
 
     @keyframes container {
-      from{ bottom:-100px; opacity:0 }
+      from{ bottom:-100px; opacity:100 }
       to{ bottom:0; opacity:1 }
     }
 
@@ -126,8 +134,24 @@
     <div style="text-align: center">
     <h6>Displaying reminders for </h6> <h6 id="date"></h6>
 
-        <p id="instructions"> Review today's reminders and deselect any email to prevent it from sending.<br>
-            Then click the button below to send selected emails.</p>
+        <p id="instructions"> Please review today's reminders below.
+            <br> Deselect any email to prevent it from sending.
+            <br> Finally, click the button at the bottom of the page to send selected emails.</p>
+    </div>
+
+    <div id="emailtemplate">
+        <p>Emails will conform to the template below:
+
+        </p>
+            <p>
+            <br>Hello <strong>(Foster Name)</strong>,
+            <br> Make sure to give (<strong>Medication(s)</strong>) to (<strong>Animal Name(s)</strong>) today.
+            <br> Notes: <strong>(Notes)</strong>
+            <br> When you have given: (<strong>Medication(s)</strong>), or if you have any questions, please email us back.
+            <br>Thank you,
+            <br>Green Hill Humane Society
+        </p>
+
     </div>
     <div id="tablespace" class="container">
         <form onsubmit="processForm();">
@@ -240,16 +264,13 @@ function processForm() {
     console.log("unselected_reminders = ", unselected_reminders);
 
     var dataPacket = JSON.stringify({"reminders_to_email" : reminders_to_email, "unselected_reminders" : unselected_reminders});
-    //console.log("dataPacket: ", dataPacket);
 
     $.getJSON( '/send_emails', {"": dataPacket}).done(function(emailJSON){
-            console.log("RIGHT when we get it back: ", emailJSON);
-            populateReturnedEmail(returnedEmailData, emailJSON);
-            renderFeedback(returnedEmailData);
-
+            $('#loadingimage').show(); // show loading spinner
+            populateReturnedEmail(returnedEmailData, emailJSON); // populates a global variable with returned email data
+            renderFeedback(returnedEmailData); // renders HTML page with this email feedback
+            $('#loadingimage').hide();
         });
-
-    console.log("Outside getJSON... returnedEmailData: ? ", returnedEmailData);
 
     // ends function processForm()
     return false;
