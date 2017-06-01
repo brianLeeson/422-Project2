@@ -178,11 +178,10 @@ def send_emails():
 
     # we don't know what the keys are (usually some stringified number, but they are unpredictable,
     # and not in ascending order or reliably starting at 0)
-    the_keys = list(emails_to_send.keys())  # TODO getting list of keys not needed. can iterate over dict directly
     failed = []
 
-    for entry in the_keys:  # entry is itself a dictionary, mapping a stringified number to an event reminder data
-        reminder = emails_to_send[entry]
+    for key in emails_to_send:  # entry is itself a dictionary, mapping a stringified number to an event reminder data
+        reminder = emails_to_send[key]
 
         foster_name = reminder['Foster Name']
         medications = reminder['Medication(s)']
