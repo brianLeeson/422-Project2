@@ -30,7 +30,9 @@ import usage_logging as ul
 from email.mime.text import MIMEText
 import base64
 import ast
-import validate_email
+import re
+import string
+VIABLE = string.ascii_letters + string.digits + "-" + "_"
 
 # Globals
 app = flask.Flask(__name__)
@@ -41,14 +43,11 @@ app.secret_key = CONFIG.secret_key
 SCOPES = 'https://www.googleapis.com/auth/calendar.readonly https://mail.google.com/'
 CLIENT_SECRET_FILE = admin_secrets.google_key_file
 
-<<<<<<< HEAD
 # ID of the calendar that stores all of the event reminders.
 REMINDER_ID = "green-hill.org_o40u2qofc9v2d273gdt4eihaus@group.calendar.google.com"
 
 TESTING_EMAIL = False; # if True, emails only get sent to TEST_EMAIL
-=======
-TESTING_EMAIL = True  # if True, emails only get sent to TEST_EMAIL
->>>>>>> 986f5a1415ea78b5adffb24852a2d773b06dd034
+
 TEST_EMAIL = "brianeleeson@gmail.com, acorso@uoregon.edu, jamiez@uoregon.edu, foster@green-hill.org"
 
 USAGE_LOGGING = True
@@ -204,6 +203,11 @@ def send_emails():
         text_reminder = email_string.format(foster_name, medications, animal_name, notes)
 
         # //// Need to see that the email is valid //////// #
+        if not check(foster_email): #if user's email address is valid
+            failed.append(reminder)
+            # we need to remove the failed entry from the list of successfully sent
+            del the_dictionary['reminders_to_email'][key]
+            break
 
         if TESTING_EMAIL:
             foster_email = TEST_EMAIL
@@ -250,6 +254,16 @@ def create_message(sender, to, subject, message_text):
     message['reply-to'] = "foster@green-hill.org" #This can be hardcoded - only GH will ever use this product
     return {'raw': base64.urlsafe_b64encode(message.as_string().encode('utf-8')).decode('utf-8')}
 
+def check(addressToVerify):
+    match = re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', addressToVerify)  
+    if match == None:
+        return False
+    else: # move on to next round of checking
+        broke = re.split("[@.]+", addressToVerify)
+        valid = True;
+        for st in broke:
+            valid ^= st in VIABLE
+        return valid
 
 def valid_credentials():
     """
