@@ -5,8 +5,6 @@ from flask import request
 from flask import jsonify
 import logging
 
-import ast
-
 # Date handling 
 import arrow  # Replacement for datetime, based on moment.js
 
@@ -23,7 +21,10 @@ sys.path.insert(0, "./secrets/")
 import CONFIG
 import admin_secrets  # Per-machine secrets
 
+# Developer modules
 import process_reminders as process
+
+import usage_logging as ul
 
 # Email Object type & encoding mechanism
 from email.mime.text import MIMEText
@@ -39,11 +40,13 @@ app.secret_key = CONFIG.secret_key
 SCOPES = 'https://www.googleapis.com/auth/calendar.readonly https://mail.google.com/'
 CLIENT_SECRET_FILE = admin_secrets.google_key_file
 
-# ID of the calendar that stores all of the event reminders.
-REMINDER_ID = "green-hill.org_o40u2qofc9v2d273gdt4eihaus@group.calendar.google.com"
-
 TESTING_EMAIL = True  # if True, emails only get sent to TEST_EMAIL
 TEST_EMAIL = "brianeleeson@gmail.com, acorso@uoregon.edu, jamiez@uoregon.edu, foster@green-hill.org"
+
+USAGE_LOGGING = True
+
+# ID of the calendar that stores all of the event reminders.
+REMINDER_ID = "green-hill.org_o40u2qofc9v2d273gdt4eihaus@group.calendar.google.com"
 
 # Pages (routed from URLs)
 
@@ -109,7 +112,8 @@ def generate():
         ...and so on
     }
     """
-
+    string = "Someone authenticated."
+    ul.write_to_log(USAGE_LOGGING, string)
     return jsonify(allReminders)
 
 

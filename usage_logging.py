@@ -22,7 +22,7 @@ def write_to_log(isLogging, logString, valueDict={}):
         date = now.format('DD-MM-YYYY')
         with open('./log/' + date, 'a') as f:
             log = logString.format(**valueDict)
-            f.write(now.isoformat() + ": " + log + "\n")
+            f.write(now.format("DD-MM-YYYY, HH:mm") + ": " + log + "\n")
 
     return None
 
