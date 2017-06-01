@@ -59,10 +59,11 @@ USAGE_LOGGING = True
 @app.route("/index")
 def index():
     """
-    Renders homepage. 
-    I don't believe we need to initialize any state on the server
+    Renders homepage.
     """
-    app.logger.debug("Entering index")
+    log_string = "Rendering homepage"
+    app.logger.debug(log_string)
+    ul.write_to_log(USAGE_LOGGING, log_string)
     return render_template('index.html')
 
 
@@ -74,10 +75,14 @@ def authenticate():
     Now that we are sure to have creds, get a gcal_service object.
     Then list the calendars using the service object.
     """
-    app.logger.debug("Checking credentials for Google calendar access")
+    log_string = "Checking credentials for Google calendar access"
+    app.logger.debug(log_string)
+    ul.write_to_log(USAGE_LOGGING, log_string)
     credentials = valid_credentials()
     if not credentials:  # not None is True. weird.
-        app.logger.debug("Redirecting to authorization")
+        log_string = "Getting valid credentials."
+        app.logger.debug(log_string)
+        ul.write_to_log(USAGE_LOGGING, log_string)
         return flask.redirect(flask.url_for('oauth2callback'))
     return render_template('success.html')
 
@@ -107,7 +112,7 @@ def generate():
         ...and so on
     }
     """
-    app.logger.debug("Generating reminders")
+    app.logger.debug("In generate")
     credentials = valid_credentials()
     if not credentials:
         return None
@@ -116,8 +121,6 @@ def generate():
 
     allReminders = generateReminders(gcal_service)
 
-    string = "Someone authenticated."
-    ul.write_to_log(USAGE_LOGGING, string)
     return jsonify(allReminders)
 
 
@@ -166,6 +169,10 @@ def send_emails():
     "failed_send":{}
     }
     """
+    log_string = "Creating and sending emails"
+    app.logger.debug(log_string)
+    ul.write_to_log(USAGE_LOGGING, log_string)
+
     incoming_data = request.args.to_dict()
     the_dictionary = ast.literal_eval(incoming_data[''])
 
@@ -352,10 +359,12 @@ def generateReminders(service):
     This function parses reminder cal data
     returns a dict of reminder instances.
     """
+    log_string = "Creating dictionary of reminders to be sent."
+    app.logger.debug(log_string)
+    ul.write_to_log(USAGE_LOGGING, log_string)
 
-    app.logger.debug("Entering generateReminders")
     # get all calendars on gmail account.
-    calendar_list = service.calendarList().list().execute()["items"]  # TODO: understand this api request. only query needed?
+    calendar_list = service.calendarList().list().execute()["items"]
 
     today = arrow.now('local')
     today = today.fromdate(today, tzinfo='local')
