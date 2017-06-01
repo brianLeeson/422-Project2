@@ -7,6 +7,8 @@ def write_to_log(isLogging, logString, valueDict={}):
     If isLogging is True, append the formatted string with the values to
     log/DD-MM-YYYY.txt
 
+    NOTE: NO SECURE DATA SHOULD BE LOGGED
+
     :param logString: string. must be in form: "{key1} ... {key2}"
     :param valueDict: dict. must be of the form: {"key1": value1, "key2": value2, ...}
     :param isLogging: Bool
