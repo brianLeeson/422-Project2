@@ -32,6 +32,10 @@ import base64
 import ast
 import re
 import string
+import socket
+import smtplib
+import dns
+from dns import resolver
 VIABLE = string.ascii_letters + string.digits + "-" + "_"
 
 # Globals
@@ -208,10 +212,9 @@ def send_emails():
 
         # //// Need to see that the email is valid //////// #
         if not check(foster_email): #if user's email address is valid
-            failed.append(reminder)
-            # we need to remove the failed entry from the list of successfully sent
-            del the_dictionary['reminders_to_email'][key]
-            break
+            print("Failed. Name: {} email: {}".format(foster_name, foster_email))
+            failed.append((key, reminder))   
+            continue
 
         if TESTING_EMAIL:
             foster_email = TEST_EMAIL
@@ -220,14 +223,17 @@ def send_emails():
 
         # send out the email!
         sent = telegram(gmail_service, sender_name, msg)
+        print("Sent an email to {} at {}".format(foster_name, foster_email))
         if not sent:
-            failed.append(reminder)
+            failed.append((key, reminder))
 
     failures = {}
     for i in range(len(failed)):
-        failures[str(i)] = failed[i]
+        #put the failed message into a new dictionary field
+        failures[str(i)] = failed[i][1] #get reminder, not key
+        #remove the failed message from the sucessfully sent messages
+        del the_dictionary['reminders_to_email'][failed[i][0]]
     the_dictionary['failed_send'] = failures  # add a new field to the original dictionary of the emails that failed
-
     return json.dumps(the_dictionary)
 
 
@@ -262,12 +268,39 @@ def check(addressToVerify):
     match = re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', addressToVerify)  
     if match == None:
         return False
-    else: # move on to next round of checking
-        broke = re.split("[@.]+", addressToVerify)
-        valid = True;
-        for st in broke:
-            valid ^= st in VIABLE
-        return valid
+    # move on to next round of checking
+
+    domain = addressToVerify.split('@')[-1]
+
+    try:
+        records = dns.resolver.query(domain, 'MX')
+        mxRecord = records[0].exchange
+        mxRecord = str(mxRecord)
+    except:
+        #print('Failed')
+        return False
+    #move on to next round - at this point the email is properly formatted and the domain exists
+    # Get local server hostname
+    host = socket.gethostname()
+
+    # SMTP lib setup (use debug level for full output)
+    server = smtplib.SMTP()
+    server.set_debuglevel(0)
+
+    # SMTP Conversation
+    server.connect(mxRecord)
+    server.helo(host)
+    server.mail('me@domain.com') # parameter is sender's address
+    code, message = server.rcpt(str(addressToVerify))
+    server.quit()
+
+    # Assume 250 as Success
+    if code == 250:
+        print('Final Success')
+        return True
+    else:
+        print('Final Failure')
+        return False
 
 def valid_credentials():
     """
