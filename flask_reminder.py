@@ -32,15 +32,12 @@ import base64
 import ast
 import re
 import string
-<<<<<<< HEAD
+
 import socket
 import smtplib
 import dns
 from dns import resolver
-=======
 
->>>>>>> b35b44d563b36af9597e43a12c50b5de1ff44273
-VIABLE = string.ascii_letters + string.digits + "-" + "_"
 
 # Globals
 app = flask.Flask(__name__)
@@ -214,18 +211,10 @@ def send_emails():
         text_reminder = email_string.format(foster_name, medications, animal_name, notes)
 
         # //// Need to see that the email is valid //////// #
-<<<<<<< HEAD
+
         if not check(foster_email): #if user's email address is valid
-            print("Failed. Name: {} email: {}".format(foster_name, foster_email))
             failed.append((key, reminder))   
             continue
-=======
-        if not check(foster_email):  # if user's email address is valid
-            failed.append(reminder)
-            # we need to remove the failed entry from the list of successfully sent
-            del the_dictionary['reminders_to_email'][key]
-            break
->>>>>>> b35b44d563b36af9597e43a12c50b5de1ff44273
 
         if TESTING_EMAIL:
             foster_email = TEST_EMAIL
@@ -234,7 +223,6 @@ def send_emails():
 
         # send out the email!
         sent = telegram(gmail_service, sender_name, msg)
-        print("Sent an email to {} at {}".format(foster_name, foster_email))
         if not sent:
             failed.append((key, reminder))
 
