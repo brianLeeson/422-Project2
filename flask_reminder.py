@@ -29,10 +29,12 @@ import usage_logging as ul
 # Email Object type & encoding mechanism
 from email.mime.text import MIMEText
 import base64
+#mechanism needed for parsing json data
 import ast
 import re
 import string
 
+#mechanisms needed to test email verification
 import socket
 import smtplib
 import dns
@@ -133,7 +135,9 @@ def send_emails():
     """
     This function will receive an ajax request from the server containing the data of who should be emailed.
     Parse that data
-    send email to fosters in that data.
+    Checks the validity of the email address by pinging SMTP server. If the email is ok format and the doman is failed, it sends!
+        Otherwise, it marks the reminder as failed and sends it back to the client.
+    send email to fosters in that data using the Gmail API
     return json dictionary mimicking the input data.
         'reminders_to_email' field contains the emails that WERE sent. 
         'unselected_reminders' are emails that the user didn't select and still need to be displayed
@@ -148,19 +152,25 @@ def send_emails():
                 "Foster Name":"John Smith",
                 "Medication(s)":"Love, Hugs",
                 "Notes":"Please give a large dose twice a day until condition improves. Oh, and don\'t forget to email us back!"}
+            {"1":
+                {"Animal Name(s)":"Buggy Boo",
+                "Foster Email":"infosaurus@dino.com",
+                "Foster Name":"Marcus",
+                "Medication(s)":"Long Walk",
+                "Notes":"Only use their yellow leash!"}}    
             },
-            "unselected_reminders":{}
+    "unselected_reminders":{}...
     }
 
     OUTPUT->
     the_dictionary =
     {"unselected_reminders":
             {"0":
-                {"Animal Name(s)":"Fluffy Bunny",
-                "Foster Email":"jsmith@email.com",
-                "Foster Name":"John Smith",
+                {"Animal Name(s)":"Wild Animal",
+                "Foster Email":"beast@animals.gov",
+                "Foster Name":"Annie",
                 "Medication(s)":"Love, Hugs",
-                "Notes":"Please give a large dose twice a day until condition improves. Oh, and don\'t forget to email us back!"}
+                "Notes":"It only likes being rubbed on the belly."}
             },
     "reminders_to_email":
             {"0":
@@ -169,7 +179,7 @@ def send_emails():
                 "Foster Name":"Amie Jamie",
                 "Medication(s)":"Long Walk",
                 "Notes":"Only take her favorite yellow leash."}
-            },},
+            },
     "failed_send":{}
     }
     """
@@ -214,7 +224,7 @@ def send_emails():
 
         if not check(foster_email): #if user's email address is valid
             failed.append((key, reminder))   
-            continue
+            continue # break out of the loop, don't try to send it
 
         if TESTING_EMAIL:
             foster_email = TEST_EMAIL
@@ -237,6 +247,12 @@ def send_emails():
 
 
 def telegram(service, userID, message):
+    """
+    args:
+    service -> Google service object - an object we can query on and the API will reply to us
+    userID -> the sender's name - the email address identity of whoever logged in and granted access to their credentials
+    message -> MIME message object containing all the basic email fields
+    """
     try:
         message = (service.users().messages().send(userId=userID, body=message).execute())
         return message
@@ -253,6 +269,7 @@ def create_message(sender, to, subject, message_text):
         subject: The subject of the email message.
         message_text: The text of the email message.
 
+    In this project, reply-to field is hardcoded to GH - they are the only users of this project
       Returns:
         An object containing a base64url encoded email object.
     """
@@ -265,6 +282,22 @@ def create_message(sender, to, subject, message_text):
 
 
 def check(addressToVerify):
+    """
+    args:
+    addressToVerify -> email address string we want to test validity of
+
+    returns:
+    boolean - True if the email is valid, False if not
+
+    An email is valid if it doesn't have syntax errors, i.e.:
+    dinosaur@gmail.com is valid, but 'dinosaur@gmail.com is not (note the quote)
+
+    This function also checks the domain (@uoregon.edu, @gmail.com, @nsa.gov, etc.)
+
+    Finally, the function will spin up a tiny SMTP server that attempts to connect to the emails_to_send
+    if it can send a message, it's a valid email.
+    For example, admissions@uoregon.edu is valid, but yellow@yellow.com doesn't exist
+    """
     match = re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', addressToVerify)
     if match is None:
         return False
@@ -276,7 +309,6 @@ def check(addressToVerify):
         mxRecord = records[0].exchange
         mxRecord = str(mxRecord)
     except:
-        #print('Failed')
         return False
     #move on to next round - at this point the email is properly formatted and the domain exists
     # Get local server hostname
@@ -295,10 +327,8 @@ def check(addressToVerify):
 
     # Assume 250 as Success
     if code == 250:
-        print('Final Success')
         return True
     else:
-        print('Final Failure')
         return False
 
 
