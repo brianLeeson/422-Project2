@@ -241,6 +241,8 @@ def send_emails():
         # remove the failed message from the successfully sent messages
         del the_dictionary['reminders_to_email'][failed[i][0]]
     the_dictionary['failed_send'] = failures  # add a new field to the original dictionary of the emails that failed
+    print("THE DICTIONARY IS")
+    print(the_dictionary)
     return json.dumps(the_dictionary)
 
 
