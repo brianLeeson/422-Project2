@@ -6,8 +6,6 @@
 
     <!--we used bootstrap to make out page work better on differently sized screens, mostly mobile-->
     <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/latest/css/bootstrap.css"/>
-    <link rel="stylesheet" type="text/css" href="/static/css/reminder.css"/>
-
 
     <style>
 
@@ -307,34 +305,34 @@ function renderFeedback(returnedEmailData) {
 
         var tableRef = $("#senttable");
         var count = 0;
-        for (var prop in sent_obj) {
-            tableRef.append("<tr id=newrow" + prop + ">" + "</tr>");
-            var rowRef = $("#newrow" + prop );
+        for (var prop1 in sent_obj) {
+            tableRef.append("<tr id=newrow1" + prop1 + ">" + "</tr>");
+            var rowRef = $("#newrow1" + prop1 );
 
             for (j = 0; j < fields.length; j++) {
-                rowRef.append("<td class='sent' >" + sent_obj[prop][fields[j]] + "</td>" );
+                rowRef.append("<td class='sent' >" + sent_obj[prop1][fields[j]] + "</td>" );
             }
         }
 
         var tableRef2 = $("#failtable");
         var count = 0;
-        for (var prop in failed_obj) {
-            tableRef2.append("<tr id=newrow" + prop + ">" + "</tr>");
-            var rowRef = $("#newrow" + prop );
+        for (var prop2 in failed_obj) {
+            tableRef2.append("<tr id=newrow2" + prop2 + ">" + "</tr>");
+            var rowRef = $("#newrow2" + prop2 );
 
             for (j = 0; j < fields.length; j++) {
-                rowRef.append("<td class='fail' >" + failed_obj[prop][fields[j]] + "</td>" );
+                rowRef.append("<td class='fail' >" + failed_obj[prop2][fields[j]] + "</td>" );
             }
         }
 
         var tableRef3 = $("#unsenttable");
         var count = 0;
-        for (var prop in unselected_obj) {
-            tableRef3.append("<tr id=newrow" + prop + ">" + "</tr>");
-            var rowRef = $("#newrow" + prop );
+        for (var prop3 in unselected_obj) {
+            tableRef3.append("<tr id=newrow3" + prop3 + ">" + "</tr>");
+            var rowRef = $("#newrow3" + prop3 );
 
             for (j = 0; j < fields.length; j++) {
-                rowRef.append("<td class='unsent' >" + unselected_obj[prop][fields[j]] + "</td>" );
+                rowRef.append("<td class='unsent' >" + unselected_obj[prop3][fields[j]] + "</td>" );
             }
         }
 
