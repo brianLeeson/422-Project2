@@ -6,7 +6,8 @@ Send appointment reminder emails.
 
 Run the flask server on a hosting service like Heroku to provide security and stability.
 
-Once email reminders have been sent for the day, prevent a second round of emails.
+Once email reminders have been sent for the day, prevent a second round of emails, or allow them only with warnings and
+adequate information.
 
 We would like to send a professionally formatted email, potentially with embedded HTML and the Green Hill logo.
 
@@ -14,8 +15,14 @@ Make event description parsing more robust.
 
 Make a more general format that could be applied for more cases, potentially for other department
 
-Database backend and web front end. Make it so that users don't have to click everyday. his would require a complete
-over-haul of the project.
+Database backend and web front end. Make it so that users don't have to click everyday. This would require a complete
+over-haul of the project, but would also make it much easier to create the other features we desire.
+For example, a database would allow us to keep logs and store timing and state information.
+Additionally, we would potentially be able to store foster/animal data in the database, which would greatly reduce the
+likelihood of having human-typed errors in the manually created reminder events (such as misspelling an email address).
+
+The database could also store information about email reminders that may have failed, and be able to notify GreenHill of
+this long after the intial attempt to send the email (because a failed email often comes back long after the send.)
 
 Relocate email address verification somewhere else. Currently email address are checked as valid after the user clicks Send
 on the emails he or she has specified - this should probably happen sometime earlier in the user experience.
