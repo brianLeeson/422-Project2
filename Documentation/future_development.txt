@@ -2,6 +2,10 @@ This project is made to be extended and built upon. This is a list of potential 
 It is not a todo list, but a list of ideas that could be implemented if possible and useful. This is a more detailed list
 than the "Ideas for Project Improvement" section of the README.md
 
+A redirection button from the feedback page would be a good idea... but as there is no additional functionality to redirect to,
+this is currently unnecessary.
+It would also be nice to have a "deselect all" button to reset all the checkboxes to empty.
+
 Send appointment reminder emails.
 
 Run the flask server on a hosting service like Heroku to provide security and stability.
