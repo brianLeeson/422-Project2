@@ -20,4 +20,5 @@ over-haul of the project.
 Relocate email address verification somewhere else. Currently email address are checked as valid after the user clicks Send
 on the emails he or she has specified - this should probably happen sometime earlier in the user experience.
 
-
+Fully debug email validation script - this SMTP checking script works only with odd dependencies on the dnspython module,
+and was unfixable by time of deadline.
