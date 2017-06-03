@@ -16,6 +16,7 @@ import httplib2  # used in oauth2 flow
 from apiclient import discovery
 
 import sys
+sys.path.insert(0, "./secrets/")
 import CONFIG
 import admin_secrets  # Per-machine secrets
 
@@ -31,13 +32,13 @@ import base64
 import ast
 import re
 
-# mechanisms needed to test email verification
+# mechanisms needed to test email verification. For future development
 import socket
 import smtplib
 import dns
 from dns import resolver
 
-sys.path.insert(0, "./secrets/")
+
 
 # Globals
 app = flask.Flask(__name__)
@@ -51,11 +52,10 @@ CLIENT_SECRET_FILE = admin_secrets.google_key_file
 # ID of the calendar that stores all of the event reminders.
 REMINDER_ID = "green-hill.org_o40u2qofc9v2d273gdt4eihaus@group.calendar.google.com"
 
+USAGE_LOGGING = True
 TESTING_EMAIL = False  # if True, emails only get sent to TEST_EMAIL
 TEST_EMAIL = "brianeleeson@gmail.com, acorso@uoregon.edu, jamiez@uoregon.edu, foster@green-hill.org"
-
-USAGE_LOGGING = True
-
+REPLY_TO = "foster@green-hill.org"  # what email should fosters reply to
 # Pages (routed from URLs)
 
 
@@ -133,8 +133,8 @@ def send_emails():
     """
     This function will receive an ajax request from the server containing the data of who should be emailed.
     Parse that data
-    Checks the validity of the email address by pinging SMTP server. If the email is ok format and the doman is failed, it sends!
-        Otherwise, it marks the reminder as failed and sends it back to the client.
+    Checks the validity of the email address by pinging SMTP server. If the email is formatted ok and the domain is
+        valid,it sends! Otherwise, it marks the reminder as failed and sends it back to the client.
     send email to fosters in that data using the Gmail API
     return json dictionary mimicking the input data.
         'reminders_to_email' field contains the emails that WERE sent. 
@@ -203,7 +203,7 @@ def send_emails():
     # and not in ascending order or reliably starting at 0)
     failed = []
 
-    for key in emails_to_send:  # entry is itself a dictionary, mapping a stringified number to an event reminder data
+    for key in emails_to_send:  # key is itself a dictionary, mapping a stringified number to an event reminder data
         reminder = emails_to_send[key]
 
         # Get all information locally
@@ -220,9 +220,9 @@ def send_emails():
 
         # //// Need to see that the email is valid //////// #
 
-        if not check(foster_email):  # if user's email address is valid
+        if not isValidEmail(foster_email):
             failed.append((key, reminder))
-            continue  # break out of the loop, don't try to send it
+            continue  # continue to next loop, don't try to send it
 
         if TESTING_EMAIL:
             foster_email = TEST_EMAIL
@@ -238,7 +238,7 @@ def send_emails():
     for i in range(len(failed)):
         # put the failed message into a new dictionary field
         failures[str(i)] = failed[i][1]  # get reminder, not key
-        # remove the failed message from the sucessfully sent messages
+        # remove the failed message from the successfully sent messages
         del the_dictionary['reminders_to_email'][failed[i][0]]
     the_dictionary['failed_send'] = failures  # add a new field to the original dictionary of the emails that failed
     return json.dumps(the_dictionary)
@@ -275,11 +275,11 @@ def create_message(sender, to, subject, message_text):
     message['to'] = to
     message['from'] = sender
     message['subject'] = subject
-    message['reply-to'] = "foster@green-hill.org"  # This can be hardcoded - only GH will ever use this product
+    message['reply-to'] = REPLY_TO
     return {'raw': base64.urlsafe_b64encode(message.as_string().encode('utf-8')).decode('utf-8')}
 
 
-def check(addressToVerify):
+def isValidEmail(addressToVerify):
     """
     args:
     addressToVerify -> email address string we want to test validity of
@@ -296,12 +296,17 @@ def check(addressToVerify):
     if it can send a message, it's a valid email.
     For example, admissions@uoregon.edu is valid, but yellow@yellow.com doesn't exist
     """
+    # check for valid format
     match = re.match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$', addressToVerify)
     if match is None:
         return False
-    # move on to next round of checking
-    domain = addressToVerify.split('@')[-1]
 
+    return True
+
+    # TODO: TEST valid email more
+    # check for valid address
+    """
+    domain = addressToVerify.split('@')[-1]
     try:
         records = dns.resolver.query(domain, 'MX')
         mxRecord = records[0].exchange
@@ -328,6 +333,7 @@ def check(addressToVerify):
         return True
     else:
         return False
+    """
 
 
 def valid_credentials():
