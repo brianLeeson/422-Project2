@@ -288,6 +288,10 @@ def isValidEmail(addressToVerify):
     returns:
     boolean - True if the email is valid, False if not
 
+
+    *** IN THIS PROJECT'S CURRENT ITERATION:
+    SMTP checking does not work - unfixable by time of deadline:( This code only checks email formatting
+
     An email is valid if it doesn't have syntax errors, i.e.:
     dinosaur@gmail.com is valid, but 'dinosaur@gmail.com is not (note the quote)
 
