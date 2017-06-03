@@ -330,8 +330,8 @@ function renderFeedback(returnedEmailData) {
         var tableRef3 = $("#unsenttable");
         var count = 0;
         for (var prop in unselected_obj) {
-            tableRef3.append("<tr id=newrow" + prop + ">" + "</tr>");
-            var rowRef = $("#newrow" + prop );
+            tableRef3.append("<tr id=newrowUNSENT" + prop + ">" + "</tr>");
+            var rowRef = $("#newrowUNSENT" + prop );
 
             for (j = 0; j < fields.length; j++) {
                 rowRef.append("<td class='unsent' >" + unselected_obj[prop][fields[j]] + "</td>" );
