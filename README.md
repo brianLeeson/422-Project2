@@ -76,6 +76,9 @@ emails, or would display information about which emails have already been sent (
 one again).  This might be implemented by saving a date-specific variable globally on the server, and using that flag
 to determine behaviors.
 
+Using a simple database to house the information would be another way to save state and records and would probably be an
+essential step toward developing more capabilities than what we're currently achieving.
+
 Security is another concern for this project. By hosting on ix we are transferring data using HTTP, which means that
 email addresses and foster information could be spied on.  Although it's not particularly sensitive, there are real
 email addresses being passed in our url query strings. 
