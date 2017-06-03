@@ -16,30 +16,28 @@ import httplib2  # used in oauth2 flow
 from apiclient import discovery
 
 import sys
-
-sys.path.insert(0, "./secrets/")
 import CONFIG
 import admin_secrets  # Per-machine secrets
 
 # Developer modules
 import process_reminders as process
-
 import usage_logging as ul
 
 # Email Object type & encoding mechanism
 from email.mime.text import MIMEText
 import base64
-#mechanism needed for parsing json data
+
+# mechanism needed for parsing json data
 import ast
 import re
-import string
 
-#mechanisms needed to test email verification
+# mechanisms needed to test email verification
 import socket
 import smtplib
 import dns
 from dns import resolver
 
+sys.path.insert(0, "./secrets/")
 
 # Globals
 app = flask.Flask(__name__)
@@ -222,9 +220,9 @@ def send_emails():
 
         # //// Need to see that the email is valid //////// #
 
-        if not check(foster_email): #if user's email address is valid
-            failed.append((key, reminder))   
-            continue # break out of the loop, don't try to send it
+        if not check(foster_email):  # if user's email address is valid
+            failed.append((key, reminder))
+            continue  # break out of the loop, don't try to send it
 
         if TESTING_EMAIL:
             foster_email = TEST_EMAIL
@@ -238,9 +236,9 @@ def send_emails():
 
     failures = {}
     for i in range(len(failed)):
-        #put the failed message into a new dictionary field
-        failures[str(i)] = failed[i][1] #get reminder, not key
-        #remove the failed message from the sucessfully sent messages
+        # put the failed message into a new dictionary field
+        failures[str(i)] = failed[i][1]  # get reminder, not key
+        # remove the failed message from the sucessfully sent messages
         del the_dictionary['reminders_to_email'][failed[i][0]]
     the_dictionary['failed_send'] = failures  # add a new field to the original dictionary of the emails that failed
     return json.dumps(the_dictionary)
@@ -310,7 +308,7 @@ def check(addressToVerify):
         mxRecord = str(mxRecord)
     except:
         return False
-    #move on to next round - at this point the email is properly formatted and the domain exists
+    # move on to next round - at this point the email is properly formatted and the domain exists
     # Get local server hostname
     host = socket.gethostname()
 
@@ -321,7 +319,7 @@ def check(addressToVerify):
     # SMTP Conversation
     server.connect(mxRecord)
     server.helo(host)
-    server.mail('me@domain.com') # parameter is sender's address
+    server.mail('me@domain.com')  # parameter is sender's address
     code, message = server.rcpt(str(addressToVerify))
     server.quit()
 
@@ -330,7 +328,6 @@ def check(addressToVerify):
         return True
     else:
         return False
-
 
 
 def valid_credentials():
