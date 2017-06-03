@@ -28,7 +28,7 @@ make
 ### Instructions:
 Note: This project has bee built to run in one place (ix) and on a specific port number. It will only work when
 running in that way or on localhost. Once running on localhost, one must have events in the google calendar that they 
-are using to sign in with. The events and be named anything and start at anytime. In those events the description field 
+are using to sign in with. The events can be named anything and start at anytime. In those events the description field 
 must be filled out with a specific format. An example can be found on the homepage and in Documentation/standard_templates.
   
 Setup:
