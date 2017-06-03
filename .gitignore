@@ -8,5 +8,5 @@ server_log.txt
 .DS_Store
 ._.DS_Store
 ._server_log
-log/*.txt
+
 
