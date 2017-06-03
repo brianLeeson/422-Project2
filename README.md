@@ -28,7 +28,7 @@ make
 ### Instructions:
 Note: This project has bee built to run in one place (ix) and on a specific port number. It will only work when
 running in that way or on localhost. Once running on localhost, one must have events in the google calendar that they 
-are using to sign in with. The events and be named anything and start at anytime. In those events the description field 
+are using to sign in with. The events can be named anything and start at anytime. In those events the description field 
 must be filled out with a specific format. An example can be found on the homepage and in Documentation/standard_templates.
   
 Setup:
@@ -75,6 +75,9 @@ from being sent.  Or, alternatively, a subsequent daily attempt(s) to send email
 emails, or would display information about which emails have already been sent (in case a user did indeed want to send
 one again).  This might be implemented by saving a date-specific variable globally on the server, and using that flag
 to determine behaviors.
+
+Using a simple database to house the information would be another way to save state and records and would probably be an
+essential step toward developing more capabilities than what we're currently achieving.
 
 Security is another concern for this project. By hosting on ix we are transferring data using HTTP, which means that
 email addresses and foster information could be spied on.  Although it's not particularly sensitive, there are real

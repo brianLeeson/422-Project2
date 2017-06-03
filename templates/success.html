@@ -6,10 +6,6 @@
 
     <!--we used bootstrap to make out page work better on differently sized screens, mostly mobile-->
     <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/latest/css/bootstrap.css"/>
-    <link rel="stylesheet" type="text/css" href="/static/css/reminder.css"/>
-
-
-    <!--don't think we need below. testing required-->
 
     <style>
 
@@ -149,11 +145,11 @@
             <br> Notes: <strong>(Notes)</strong>
             <br> When you have given: (<strong>Medication(s)</strong>), or if you have any questions, please email us back.
             <br>Thank you,
-            <br>Green Hill Humane Society
+            <br>GreenHill Humane Society
         </p>
 
     </div>
-    <div id="tablespace" class="container">
+    <div id="tablespace" class="container" style="margin: 20px;">
         <form onsubmit="processForm();">
             <table id="tabletime" class="btn-holder" style="width:95%;border: 1px solid black; float:center;">
                 <tr>
@@ -177,13 +173,7 @@
 
     <script>
 
-/* format of retrieved JSON Data:
-    { 0: {Foster Name : "John Smith",
-        Foster Email : "jsmith@email.com",
-        Animal Name(s) : "Fluffy Bunny",
-        Medication(s) : "Love, Hugs",
-        Notes : "blah blah blah blah"}, 1: {....}, 2: {....} }
-*/
+
 
 days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 n = new Date();
@@ -196,23 +186,20 @@ document.getElementById("date").innerHTML = "<strong> " + day + ", " + m + "/" +
 var remindersGlobal = {};
 var returnedEmailData = {};
 
-// Used to put JSON data from Google reminders calendar into a global object
-function populateRemindersGlobal(aGlobal, JSON, JSONlength) {
-    for (var prop in JSON) {
-        aGlobal[prop] = JSON[prop];
-    }
-    aGlobal["length"] = JSONlength;
-};
-
-// Used to put JSON data from returned Email feedback into a global object
-function populateReturnedEmail(returnedEmailData, JSON) {
+function populateEmailData(returnedEmailData, JSON) {
     for (var prop in JSON) {
         returnedEmailData[prop] = JSON[prop];
     }
-};
-
-
+}
 // AJAX request to '/generate' - get reminder calendar data
+/* format of retrieved JSON Data:
+    { 0: {Foster Name : "John Smith",
+        Foster Email : "jsmith@email.com",
+        Animal Name(s) : "Fluffy Bunny",
+        Medication(s) : "Love, Hugs",
+        Notes : "blah blah blah blah"}, 1: {....}, 2: {....} }
+*/
+// This function executes immediately upon page loading and retrieves/renders JSON data
 $(document).ready(function() {
     $('#loadingimage').show();
     $.ajax({
@@ -223,7 +210,6 @@ $(document).ready(function() {
             console.log("success", reminders);
             var count = Object.keys(reminders).length;
             console.log("count =", count);
-           // populateRemindersGlobal(remindersGlobal, reminders, count);
             remindersGlobal = reminders;
             remindersGlobal.length = count;
             var fields = ["Foster Name", "Foster Email", "Animal Name(s)", "Medication(s)", "Notes"];
@@ -243,7 +229,6 @@ $(document).ready(function() {
     })
 });
 
-console.log("Outside AJAX function: ", remindersGlobal);
 
 // processes form information to send selected data for emailing
 function processForm() {
@@ -267,7 +252,7 @@ function processForm() {
 
     $.getJSON( '/send_emails', {"": dataPacket}).done(function(emailJSON){
             $('#loadingimage').show(); // show loading spinner
-            populateReturnedEmail(returnedEmailData, emailJSON); // populates a global variable with returned email data
+            populateEmailData(returnedEmailData, emailJSON); // populates a global variable with returned email data
             renderFeedback(returnedEmailData); // renders HTML page with this email feedback
             $('#loadingimage').hide();
         });
@@ -277,15 +262,10 @@ function processForm() {
     }
 
 function renderFeedback(returnedEmailData) {
-    //setTimeout( function() {
-        console.log("in renderFeedback()");
-        console.log("argument returnedEmailData: ", returnedEmailData);
-        console.log("GIVE IT TO ME: ", returnedEmailData["reminders_to_email"]);
-
-
         document.getElementById("instructions").innerHTML = "";
         document.getElementById("tablespace").innerHTML = "";
-        var newHTML = '<h6> <strong>Sent emails to the following fosters: </strong></h6>\
+        var newHTML = '<h3 align="center"> <strong> Success! </strong> </h3>\
+                <h6> <strong>Sent emails to the following fosters: </strong></h6>\
                                  <table id="senttable" class="sent" style="width:95%;border: 1px solid black; float:center;">\
                                        <tr>\
                                             <th id="fostername" class="sent" >Foster Name</th>\
@@ -320,45 +300,43 @@ function renderFeedback(returnedEmailData) {
         var fields = ["Foster Name", "Foster Email", "Animal Name(s)", "Medication(s)", "Notes"];
 
         var sent_obj = returnedEmailData["reminders_to_email"];
-        console.log("sent_obj : ", sent_obj);
         var failed_obj = returnedEmailData["failed_send"];
         var unselected_obj = returnedEmailData["unselected_reminders"];
 
         var tableRef = $("#senttable");
         var count = 0;
-        for (var prop in sent_obj) {
-            tableRef.append("<tr id=newrow" + prop + ">" + "</tr>");
-            var rowRef = $("#newrow" + prop );
+        for (var prop1 in sent_obj) {
+            tableRef.append("<tr id=newrow1" + prop1 + ">" + "</tr>");
+            var rowRef = $("#newrow1" + prop1 );
 
             for (j = 0; j < fields.length; j++) {
-                rowRef.append("<td class='sent' >" + sent_obj[prop][fields[j]] + "</td>" );
+                rowRef.append("<td class='sent' >" + sent_obj[prop1][fields[j]] + "</td>" );
             }
         }
 
         var tableRef2 = $("#failtable");
         var count = 0;
-        for (var prop in failed_obj) {
-            tableRef2.append("<tr id=newrow" + prop + ">" + "</tr>");
-            var rowRef = $("#newrow" + prop );
+        for (var prop2 in failed_obj) {
+            tableRef2.append("<tr id=newrow2" + prop2 + ">" + "</tr>");
+            var rowRef = $("#newrow2" + prop2 );
 
             for (j = 0; j < fields.length; j++) {
-                rowRef.append("<td class='fail' >" + failed_obj[prop][fields[j]] + "</td>" );
+                rowRef.append("<td class='fail' >" + failed_obj[prop2][fields[j]] + "</td>" );
             }
         }
 
         var tableRef3 = $("#unsenttable");
         var count = 0;
-        for (var prop in unselected_obj) {
-            tableRef3.append("<tr id=newrow" + prop + ">" + "</tr>");
-            var rowRef = $("#newrow" + prop );
+        for (var prop3 in unselected_obj) {
+            tableRef3.append("<tr id=newrow3" + prop3 + ">" + "</tr>");
+            var rowRef = $("#newrow3" + prop3 );
 
             for (j = 0; j < fields.length; j++) {
-                rowRef.append("<td class='unsent' >" + unselected_obj[prop][fields[j]] + "</td>" );
+                rowRef.append("<td class='unsent' >" + unselected_obj[prop3][fields[j]] + "</td>" );
             }
         }
 
         return false;
-        //}, 2000);
 } // end renderFeedback
 
     </script>
