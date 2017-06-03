@@ -219,7 +219,6 @@ def send_emails():
         text_reminder = email_string.format(foster_name, medications, animal_name, notes)
 
         # //// Need to see that the email is valid //////// #
-
         if not isValidEmail(foster_email):
             failed.append((key, reminder))
             continue  # continue to next loop, don't try to send it
@@ -241,9 +240,6 @@ def send_emails():
         # remove the failed message from the successfully sent messages
         del the_dictionary['reminders_to_email'][failed[i][0]]
     the_dictionary['failed_send'] = failures  # add a new field to the original dictionary of the emails that failed
-
-    print("THE DICTIONARY IS")
-    print(the_dictionary)
 
     return json.dumps(the_dictionary)
 
@@ -310,7 +306,8 @@ def isValidEmail(addressToVerify):
     # TODO: TEST valid email more
     # check for valid address
     """
-    domain = addressToVerify.split('@')[-1]
+    domain = addressToVerify.split('@')[1]
+    print("DOMAIN IS : {}".format(domain))
     try:
         records = dns.resolver.query(domain, 'MX')
         mxRecord = records[0].exchange
@@ -338,6 +335,7 @@ def isValidEmail(addressToVerify):
     else:
         return False
     """
+    
 
 
 def valid_credentials():
