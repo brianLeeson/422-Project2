@@ -147,7 +147,7 @@
             <br> Notes: <strong>(Notes)</strong>
             <br> When you have given: (<strong>Medication(s)</strong>), or if you have any questions, please email us back.
             <br>Thank you,
-            <br>Green Hill Humane Society
+            <br>GreenHill Humane Society
         </p>
 
     </div>
@@ -188,6 +188,11 @@ document.getElementById("date").innerHTML = "<strong> " + day + ", " + m + "/" +
 var remindersGlobal = {};
 var returnedEmailData = {};
 
+function populateEmailData(returnedEmailData, JSON) {
+    for (var prop in JSON) {
+        returnedEmailData[prop] = JSON[prop];
+    }
+}
 // AJAX request to '/generate' - get reminder calendar data
 /* format of retrieved JSON Data:
     { 0: {Foster Name : "John Smith",
@@ -249,7 +254,7 @@ function processForm() {
 
     $.getJSON( '/send_emails', {"": dataPacket}).done(function(emailJSON){
             $('#loadingimage').show(); // show loading spinner
-            returnedEmailData = emailJSON; // populates a global variable with returned email data
+            populateEmailData(returnedEmailData, emailJSON); // populates a global variable with returned email data
             renderFeedback(returnedEmailData); // renders HTML page with this email feedback
             $('#loadingimage').hide();
         });
@@ -324,9 +329,7 @@ function renderFeedback(returnedEmailData) {
 
         var tableRef3 = $("#unsenttable");
         var count = 0;
-        console.log("unselected_obj is ", unselected_obj);
         for (var prop in unselected_obj) {
-            console.log("prop is ", prop);
             tableRef3.append("<tr id=newrow" + prop + ">" + "</tr>");
             var rowRef = $("#newrow" + prop );
 
