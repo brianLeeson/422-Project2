@@ -53,7 +53,7 @@ CLIENT_SECRET_FILE = admin_secrets.google_key_file
 # ID of the calendar that stores all of the event reminders.
 REMINDER_ID = "green-hill.org_o40u2qofc9v2d273gdt4eihaus@group.calendar.google.com"
 
-TESTING_EMAIL = True  # if True, emails only get sent to TEST_EMAIL
+TESTING_EMAIL = False  # if True, emails only get sent to TEST_EMAIL
 TEST_EMAIL = "brianeleeson@gmail.com, acorso@uoregon.edu, jamiez@uoregon.edu, foster@green-hill.org"
 
 USAGE_LOGGING = True
